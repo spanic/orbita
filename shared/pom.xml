@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.bmstu_bureau_1440</groupId>
+        <artifactId>orbita</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>shared</artifactId>
+    <name>shared</name>
+    <description>Cross-service utilities. Kept framework-light on purpose.</description>
+
+    <!--
+      No web/JPA/Kafka here: this is a plain library jar. It inherits only Lombok
+      and the core test stack from the parent. Add shared code (DTOs, constants,
+      utilities) as the services grow.
+    -->
+
+</project>

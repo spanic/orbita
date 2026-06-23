@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: payments-service
+  datasource:
+    url: ${PAYMENTS_DB_URL:jdbc:postgresql://localhost:5432/payments}
+    username: ${PAYMENTS_DB_USER:payments}
+    password: ${PAYMENTS_DB_PASSWORD:payments}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Boilerplate convenience. Switch to a migration tool (Flyway/Liquibase) for production.
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: payments-service
+      auto-offset-reset: earliest
+
+server:
+  port: ${SERVER_PORT:8082}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

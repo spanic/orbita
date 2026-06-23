@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: orders-service
+  datasource:
+    url: ${ORDERS_DB_URL:jdbc:postgresql://localhost:5432/orders}
+    username: ${ORDERS_DB_USER:orders}
+    password: ${ORDERS_DB_PASSWORD:orders}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Boilerplate convenience. Switch to a migration tool (Flyway/Liquibase) for production.
+      ddl-auto: update
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: orders-service
+      auto-offset-reset: earliest
+
+server:
+  port: ${SERVER_PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
