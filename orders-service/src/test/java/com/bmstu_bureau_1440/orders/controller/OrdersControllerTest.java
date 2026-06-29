@@ -1,33 +1,33 @@
 package com.bmstu_bureau_1440.orders.controller;
 
-import com.bmstu_bureau_1440.orders.model.Order;
-import com.bmstu_bureau_1440.orders.repository.OrderRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+
+import java.util.List;
+
 import org.instancio.Instancio;
 import org.instancio.junit.InstancioExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.bmstu_bureau_1440.orders.model.Order;
+import com.bmstu_bureau_1440.orders.repository.OrderRepository;
 
 @ExtendWith(InstancioExtension.class)
 @WebMvcTest(OrdersController.class)
 class OrdersControllerTest {
 
     @Autowired
-    MockMvc mockMvc;
+    MockMvcTester mvcTester;
 
     @MockitoBean
     OrderRepository orderRepository;
@@ -35,26 +35,33 @@ class OrdersControllerTest {
     @Test
     void getOrders_returnsAllOrdersAsJson() throws Exception {
         List<Order> orders = Instancio.ofList(Order.class).size(2).create();
+
         when(orderRepository.findAll()).thenReturn(orders);
 
-        mockMvc.perform(get("/orders"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].id").value(orders.get(0).getId().toString()))
-                .andExpect(jsonPath("$[1].id").value(orders.get(1).getId().toString()));
+        assertThat(mvcTester.perform(get("/orders")))
+                .hasStatus(HttpStatus.OK)
+                .hasContentType(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .convertTo(Order[].class)
+                .satisfies(array -> assertThat(array)
+                        .hasSameSizeAs(orders)
+                        .extracting(Order::getId)
+                        .containsExactly(orders.get(0).getId(), orders.get(1).getId()));
     }
 
     @Test
     void createOrder_returnsCreatedWithSavedOrder() throws Exception {
-        Order saved = Instancio.create(Order.class);
-        when(orderRepository.save(any(Order.class))).thenReturn(saved);
+        Order order = Instancio.create(Order.class);
 
-        mockMvc.perform(post("/orders"))
-                .andExpect(status().isCreated())
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.id").value(saved.getId().toString()))
-                .andExpect(jsonPath("$.createdAt").exists());
+        when(orderRepository.save(any(Order.class))).thenReturn(order);
+
+        assertThat(mvcTester.perform(post("/orders")))
+                .hasStatus(HttpStatus.CREATED)
+                .hasContentType(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .convertTo(Order.class)
+                .returns(order.getId(), Order::getId)
+                .returns(order.getCreatedAt(), Order::getCreatedAt);
     }
 
 }
