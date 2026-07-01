@@ -3,14 +3,17 @@ package com.bmstu_bureau_1440.orders.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bmstu_bureau_1440.orders.dto.CreateOrderRequest;
 import com.bmstu_bureau_1440.orders.model.Order;
-import com.bmstu_bureau_1440.orders.repository.OrderRepository;
+import com.bmstu_bureau_1440.orders.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,17 +22,17 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrdersController {
 
-    private final OrderRepository orderRepository;
+    private final OrderService orderService;
 
     @GetMapping
     public List<Order> getOrders() {
-        return orderRepository.findAll();
+        return orderService.findAll();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Order createOrder() {
-        return orderRepository.save(new Order());
+    public Order createOrder(@RequestBody @Validated CreateOrderRequest request) {
+        return orderService.create(request);
     }
 
 }

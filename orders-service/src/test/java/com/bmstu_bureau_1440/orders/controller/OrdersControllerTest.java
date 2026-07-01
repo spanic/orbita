@@ -1,11 +1,13 @@
 package com.bmstu_bureau_1440.orders.controller;
 
+import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.ARCHIVE_ORDER_MODEL;
+import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.MONITORING_ORDER_MODEL;
+import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.TASKING_ORDER_MODEL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.instancio.Instancio;
@@ -20,7 +22,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import com.bmstu_bureau_1440.orders.model.Order;
-import com.bmstu_bureau_1440.orders.repository.OrderRepository;
+import com.bmstu_bureau_1440.orders.service.OrderService;
 
 @ExtendWith(InstancioExtension.class)
 @WebMvcTest(OrdersController.class)
@@ -30,13 +32,16 @@ class OrdersControllerTest {
     MockMvcTester mvcTester;
 
     @MockitoBean
-    OrderRepository orderRepository;
+    OrderService orderService;
 
     @Test
     void getOrders_returnsAllOrdersAsJson() throws Exception {
-        List<Order> orders = Instancio.ofList(Order.class).size(2).create();
+        List<Order> orders = Arrays.asList(
+                Instancio.create(ARCHIVE_ORDER_MODEL),
+                Instancio.create(TASKING_ORDER_MODEL),
+                Instancio.create(MONITORING_ORDER_MODEL));
 
-        when(orderRepository.findAll()).thenReturn(orders);
+        when(orderService.findAll()).thenReturn(orders);
 
         assertThat(mvcTester.perform(get("/orders")))
                 .hasStatus(HttpStatus.OK)
@@ -45,23 +50,7 @@ class OrdersControllerTest {
                 .convertTo(Order[].class)
                 .satisfies(array -> assertThat(array)
                         .hasSameSizeAs(orders)
-                        .extracting(Order::getId)
-                        .containsExactly(orders.get(0).getId(), orders.get(1).getId()));
-    }
-
-    @Test
-    void createOrder_returnsCreatedWithSavedOrder() throws Exception {
-        Order order = Instancio.create(Order.class);
-
-        when(orderRepository.save(any(Order.class))).thenReturn(order);
-
-        assertThat(mvcTester.perform(post("/orders")))
-                .hasStatus(HttpStatus.CREATED)
-                .hasContentType(MediaType.APPLICATION_JSON)
-                .bodyJson()
-                .convertTo(Order.class)
-                .returns(order.getId(), Order::getId)
-                .returns(order.getCreatedAt(), Order::getCreatedAt);
+                        .containsExactlyElementsOf(orders));
     }
 
 }

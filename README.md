@@ -6,11 +6,11 @@ utilities module.
 
 ## Modules
 
-| Module             | Type            | Description                                              |
-|--------------------|-----------------|----------------------------------------------------------|
-| `shared`           | library jar     | Cross-service utilities. Framework-light on purpose.     |
-| `orders-service`   | executable jar  | REST + JPA/PostgreSQL + Kafka. HTTP on `:8081`.          |
-| `payments-service` | executable jar  | REST + JPA/PostgreSQL + Kafka. HTTP on `:8082`.          |
+| Module             | Type           | Description                                          |
+| ------------------ | -------------- | ---------------------------------------------------- |
+| `shared`           | library jar    | Cross-service utilities. Framework-light on purpose. |
+| `orders-service`   | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8081`.      |
+| `payments-service` | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8082`.      |
 
 Each service exposes a `GET /hello` endpoint (returns a greeting built via the
 `shared` module) and Actuator health/info at `/actuator/health`, `/actuator/info`.
@@ -74,13 +74,13 @@ docker compose up --build
 Settings live in each service's `src/main/resources/application.yaml` and are
 overridable via environment variables (defaults target `localhost`):
 
-| Variable                                            | Default                                      |
-|-----------------------------------------------------|----------------------------------------------|
-| `ORDERS_DB_URL` / `PAYMENTS_DB_URL`                 | `jdbc:postgresql://localhost:5432/<db>`      |
-| `ORDERS_DB_USER` / `PAYMENTS_DB_USER`               | `<service>`                                  |
-| `ORDERS_DB_PASSWORD` / `PAYMENTS_DB_PASSWORD`       | `<service>`                                  |
-| `KAFKA_BOOTSTRAP_SERVERS`                           | `localhost:9092`                             |
-| `SERVER_PORT`                                       | `8081` (orders) / `8082` (payments)          |
+| Variable                                      | Default                                 |
+| --------------------------------------------- | --------------------------------------- |
+| `ORDERS_DB_URL` / `PAYMENTS_DB_URL`           | `jdbc:postgresql://localhost:5432/<db>` |
+| `ORDERS_DB_USER` / `PAYMENTS_DB_USER`         | `<service>`                             |
+| `ORDERS_DB_PASSWORD` / `PAYMENTS_DB_PASSWORD` | `<service>`                             |
+| `KAFKA_BOOTSTRAP_SERVERS`                     | `localhost:9092`                        |
+| `SERVER_PORT`                                 | `8081` (orders) / `8082` (payments)     |
 
 > `spring.jpa.hibernate.ddl-auto` is set to `update` for boilerplate convenience.
 > Switch to a migration tool (Flyway/Liquibase) before production.
