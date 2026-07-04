@@ -1,6 +1,5 @@
 package com.bmstu_bureau_1440.orders.dto;
 
-import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.model.OrderTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -12,5 +11,4 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = MonitoringPayload.class, name = OrderTypes.MONITORING)
 })
 public sealed interface OrderPayload permits ArchivePayload, TaskingPayload, MonitoringPayload {
-    Order toEntity();
 }

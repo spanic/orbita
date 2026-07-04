@@ -37,6 +37,10 @@ class OrdersServiceRepositoryIntegrationTest {
         orderRepository.deleteAll();
     }
 
+    private static Stream<Model<? extends Order>> orderModels() {
+        return Stream.of(ARCHIVE_ORDER_MODEL, TASKING_ORDER_MODEL, MONITORING_ORDER_MODEL);
+    }
+
     @Test
     void contextLoads() {
     }
@@ -70,10 +74,6 @@ class OrdersServiceRepositoryIntegrationTest {
         assertThat(found)
                 .hasSameSizeAs(orders)
                 .containsExactlyElementsOf(orders);
-    }
-
-    private static Stream<Model<? extends Order>> orderModels() {
-        return Stream.of(ARCHIVE_ORDER_MODEL, TASKING_ORDER_MODEL, MONITORING_ORDER_MODEL);
     }
 
 }

@@ -19,12 +19,15 @@ public final class OrderTestsFixtures {
     };
 
     public static final Model<TaskingOrder> TASKING_ORDER_MODEL = Instancio.of(TaskingOrder.class)
-            .ignore(all(AUTO_GENERATED_FIELDS)).toModel();
+            .ignore(all(AUTO_GENERATED_FIELDS))
+            .toModel();
 
     public static final Model<MonitoringOrder> MONITORING_ORDER_MODEL = Instancio.of(MonitoringOrder.class)
-            .ignore(all(AUTO_GENERATED_FIELDS)).toModel();
+            .ignore(all(AUTO_GENERATED_FIELDS))
+            .toModel();
 
     public static final Model<ArchiveOrder> ARCHIVE_ORDER_MODEL = Instancio.of(ArchiveOrder.class)
-            .ignore(all(AUTO_GENERATED_FIELDS)).toModel();
+            .ignore(all(AUTO_GENERATED_FIELDS))
+            .toModel();
 
 }
