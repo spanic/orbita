@@ -1,5 +1,6 @@
 package com.bmstu_bureau_1440.orders.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import jakarta.persistence.Column;
@@ -23,8 +24,8 @@ public class ArchiveOrder extends Order {
     @Column(updatable = false)
     private LocalDate captureDate;
 
-    public ArchiveOrder(String aoi, LocalDate captureDate) {
-        super(aoi);
+    public ArchiveOrder(String aoi, BigDecimal price, LocalDate captureDate) {
+        super(aoi, price);
         this.captureDate = captureDate;
     }
 

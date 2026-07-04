@@ -1,8 +1,12 @@
 package com.bmstu_bureau_1440.orders.model;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,11 +23,17 @@ public class MonitoringOrder extends Order {
 
     @NonNull
     @Column(updatable = false)
-    private String cadence;
+    @Enumerated(EnumType.STRING)
+    private Cadence cadence;
 
-    public MonitoringOrder(String aoi, String cadence) {
-        super(aoi);
+    @NonNull
+    @Column(updatable = false)
+    private Integer durationDays;
+
+    public MonitoringOrder(String aoi, BigDecimal price, Cadence cadence, Integer durationDays) {
+        super(aoi, price);
         this.cadence = cadence;
+        this.durationDays = durationDays;
     }
 
 }

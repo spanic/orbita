@@ -1,5 +1,6 @@
 package com.bmstu_bureau_1440.orders.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -58,5 +59,9 @@ public abstract class Order {
     @NonNull
     @Column(nullable = false, updatable = false)
     private String aoi;
+
+    @NonNull
+    @Column(nullable = false)
+    private BigDecimal price;
 
 }

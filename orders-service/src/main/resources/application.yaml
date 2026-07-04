@@ -1,6 +1,8 @@
 spring:
   application:
     name: orders-service
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   datasource:
     url: ${ORDERS_DB_URL:jdbc:postgresql://localhost:5432/orders}
     username: ${ORDERS_DB_USER:orders}
@@ -15,6 +17,10 @@ spring:
     consumer:
       group-id: orders-service
       auto-offset-reset: earliest
+
+orders:
+  pricing:
+    unit-price: ${ORDERS_UNIT_PRICE:100.00}
 
 server:
   port: ${SERVER_PORT:8081}
