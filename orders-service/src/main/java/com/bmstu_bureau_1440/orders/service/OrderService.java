@@ -1,9 +1,12 @@
 package com.bmstu_bureau_1440.orders.service;
 
 import java.util.List;
+import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.bmstu_bureau_1440.orders.dto.CreateOrderRequest;
 import com.bmstu_bureau_1440.orders.mapper.PayloadMapperRegistry;
@@ -23,6 +26,11 @@ public class OrderService {
 
     public List<Order> findAll() {
         return orderRepository.findAll();
+    }
+
+    public Order findById(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ORDER_NOT_FOUND"));
     }
 
     @Transactional

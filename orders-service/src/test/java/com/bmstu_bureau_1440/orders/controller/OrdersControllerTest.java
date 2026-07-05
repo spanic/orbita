@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 import org.instancio.Instancio;
 import org.instancio.junit.InstancioExtension;
@@ -20,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.service.OrderService;
@@ -51,6 +53,33 @@ class OrdersControllerTest {
                 .satisfies(array -> assertThat(array)
                         .hasSameSizeAs(orders)
                         .containsExactlyElementsOf(orders));
+    }
+
+    @Test
+    void getOrder_returnsOrderAsJson_whenOrderExists() throws Exception {
+        UUID orderId = UUID.randomUUID();
+        Order order = Instancio.create(ARCHIVE_ORDER_MODEL);
+
+        when(orderService.findById(orderId)).thenReturn(order);
+
+        assertThat(mvcTester.perform(get("/orders/{order_id}", orderId)))
+                .hasStatus(HttpStatus.OK)
+                .hasContentType(MediaType.APPLICATION_JSON)
+                .bodyJson()
+                .convertTo(Order.class)
+                .isEqualTo(order);
+    }
+
+    @Test
+    void getOrder_returnsNotFound_whenOrderDoesNotExist() throws Exception {
+        UUID orderId = UUID.randomUUID();
+
+        when(orderService.findById(orderId))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Order not found: " + orderId));
+
+        assertThat(mvcTester.perform(get("/orders/{order_id}", orderId)))
+                .hasStatus(HttpStatus.NOT_FOUND);
     }
 
 }

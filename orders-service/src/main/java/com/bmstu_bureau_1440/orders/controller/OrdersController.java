@@ -1,10 +1,12 @@
 package com.bmstu_bureau_1440.orders.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +29,11 @@ public class OrdersController {
     @GetMapping
     public List<Order> getOrders() {
         return orderService.findAll();
+    }
+
+    @GetMapping("/{order_id}")
+    public Order getOrder(@PathVariable("order_id") UUID orderId) {
+        return orderService.findById(orderId);
     }
 
     @PostMapping

@@ -7,6 +7,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record MonitoringPayload(@NotBlank String aoi, @NotNull Cadence cadence,
-                @NotNull @Positive @Min(1) Integer durationDays) implements OrderPayload {
+public record MonitoringPayload(
+        @NotBlank String aoi,
+        @NotNull Cadence cadence,
+        @NotNull @Positive @Min(1) Integer durationDays) implements OrderPayload {
 }

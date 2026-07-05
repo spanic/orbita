@@ -5,5 +5,7 @@ import java.time.LocalDate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-public record ArchivePayload(@NotBlank String aoi, @NotNull LocalDate captureDate) implements OrderPayload {
+public record ArchivePayload(
+        @NotBlank String aoi,
+        @NotNull LocalDate captureDate) implements OrderPayload {
 }
