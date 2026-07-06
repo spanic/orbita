@@ -1,7 +1,7 @@
 package com.bmstu_bureau_1440.orders.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
@@ -25,18 +25,18 @@ public class TaskingOrder extends Order {
     @NonNull
     @Column(updatable = false)
     @EqualsAndHashCode.Exclude
-    private LocalDateTime timeWindowStart;
+    private Instant timeWindowStart;
 
     @Column(updatable = false)
     @EqualsAndHashCode.Exclude
-    private LocalDateTime timeWindowEnd;
+    private Instant timeWindowEnd;
 
     @NonNull
     @Enumerated(EnumType.STRING)
     @Column(updatable = false)
     private SensorType sensorType;
 
-    public TaskingOrder(String aoi, BigDecimal price, LocalDateTime timeWindowStart, LocalDateTime timeWindowEnd,
+    public TaskingOrder(String aoi, BigDecimal price, Instant timeWindowStart, Instant timeWindowEnd,
             SensorType sensorType) {
         super(aoi, price);
         this.timeWindowStart = timeWindowStart;
