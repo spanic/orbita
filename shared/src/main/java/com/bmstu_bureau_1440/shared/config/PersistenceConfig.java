@@ -1,4 +1,4 @@
-package com.bmstu_bureau_1440.orders.config;
+package com.bmstu_bureau_1440.shared.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;

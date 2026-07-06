@@ -14,10 +14,11 @@
     <name>shared</name>
     <description>Cross-service utilities. Kept framework-light on purpose.</description>
 
-    <!--
-      No web/JPA/Kafka here: this is a plain library jar. It inherits only Lombok
-      and the core test stack from the parent. Add shared code (DTOs, constants,
-      utilities) as the services grow.
-    -->
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

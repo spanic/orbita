@@ -1,0 +1,10 @@
+package com.bmstu_bureau_1440.payments.controller;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class PaymentsApi {
+
+    public static final String BASE_PATH = "/accounts";
+}

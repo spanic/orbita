@@ -20,7 +20,7 @@ import com.bmstu_bureau_1440.orders.service.OrderService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping(OrdersApi.BASE_PATH)
 @RequiredArgsConstructor
 public class OrdersController {
 

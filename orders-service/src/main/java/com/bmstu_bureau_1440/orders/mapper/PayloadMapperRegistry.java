@@ -14,18 +14,17 @@ import com.bmstu_bureau_1440.orders.model.Order;
 @Component
 public class PayloadMapperRegistry {
 
-    private final Map<Class<? extends OrderPayload>, PayloadMapper<? extends OrderPayload>> mappers;
+    private final Map<Class<? extends OrderPayload>, Function<? extends OrderPayload, Order>> mappers;
 
-    public PayloadMapperRegistry(List<PayloadMapper<? extends OrderPayload>> mappers) {
-        this.mappers = mappers.stream()
-                .collect(Collectors.toUnmodifiableMap(
-                        PayloadMapperRegistry::resolvePayloadType,
-                        Function.identity()));
+    public PayloadMapperRegistry(List<Function<? extends OrderPayload, Order>> mappers) {
+        this.mappers = mappers.stream().collect(Collectors.toUnmodifiableMap(
+                PayloadMapperRegistry::resolvePayloadType,
+                Function.identity()));
     }
 
     @SuppressWarnings("unchecked")
     public Order map(OrderPayload payload) {
-        PayloadMapper<? extends OrderPayload> mapper = mappers.get(payload.getClass());
+        Function<OrderPayload, Order> mapper = (Function<OrderPayload, Order>) mappers.get(payload.getClass());
 
         if (mapper == null) {
             throw new IllegalStateException(String.format(
@@ -33,17 +32,17 @@ public class PayloadMapperRegistry {
                     payload.getClass().getSimpleName()));
         }
 
-        return ((PayloadMapper<OrderPayload>) mapper).map(payload);
+        return mapper.apply(payload);
     }
 
-    private static Class<? extends OrderPayload> resolvePayloadType(PayloadMapper<?> mapper) {
-        Class<?> payloadType = ResolvableType.forClass(PayloadMapper.class, mapper.getClass())
+    private static Class<? extends OrderPayload> resolvePayloadType(Function<? extends OrderPayload, Order> mapper) {
+        Class<?> payloadType = ResolvableType.forClass(Function.class, mapper.getClass())
                 .getGeneric(0)
                 .resolve();
 
         if (payloadType == null) {
             throw new IllegalStateException(String.format(
-                    "Could not resolve payload type for mapper: %s - ensure it implements PayloadMapper interface properly",
+                    "Could not resolve payload type for mapper: %s - ensure it implements Function<PayloadType, Order> directly",
                     mapper.getClass().getName()));
         }
 
