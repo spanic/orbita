@@ -16,7 +16,11 @@ public class ArchivePayloadMapper implements PayloadMapper<ArchivePayload> {
 
     @Override
     public ArchiveOrder map(ArchivePayload payload) {
-        return new ArchiveOrder(payload.aoi(), pricingProperties.unitPrice(), payload.captureDate());
+        return new ArchiveOrder(
+                payload.aoi(),
+                pricingProperties.unitPrice(),
+                payload.captureDate(),
+                payload.sensorType());
     }
 
 }

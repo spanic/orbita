@@ -15,7 +15,8 @@ public enum ErrorCode {
     INVALID_REQUEST(Codes.INVALID_REQUEST, HttpStatus.BAD_REQUEST, "Invalid request"),
     UNKNOWN_PRODUCT_TYPE(Codes.UNKNOWN_PRODUCT_TYPE, HttpStatus.BAD_REQUEST, "Unknown product type"),
     VALIDATION_FAILED(Codes.VALIDATION_FAILED, HttpStatus.BAD_REQUEST, "Request validation failed"),
-    INTERNAL_ERROR(Codes.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
+    INTERNAL_ERROR(Codes.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred"),
+    ORDER_NOT_FOUND(Codes.ORDER_NOT_FOUND, HttpStatus.NOT_FOUND, "Order not found");
 
     @Getter
     private final String code;
@@ -35,6 +36,7 @@ public enum ErrorCode {
         public static final String UNKNOWN_PRODUCT_TYPE = "UNKNOWN_PRODUCT_TYPE";
         public static final String VALIDATION_FAILED = "VALIDATION_FAILED";
         public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
+        public static final String ORDER_NOT_FOUND = "ORDER_NOT_FOUND";
 
         private Codes() {
         }

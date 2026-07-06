@@ -12,6 +12,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import com.bmstu_bureau_1440.orders.controller.OrdersApi;
 import com.bmstu_bureau_1440.orders.dto.ErrorResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,13 @@ public class OrdersExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        return toResponse(ErrorCode.INVALID_REQUEST);
+        ErrorCode code = OrdersApi.ORDER_ID_PARAM.equals(ex.getName()) ? ErrorCode.ORDER_NOT_FOUND : ErrorCode.INVALID_REQUEST;
+        return toResponse(code);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFound(OrderNotFoundException ex) {
+        return toResponse(ErrorCode.ORDER_NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

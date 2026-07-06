@@ -6,6 +6,8 @@ import java.time.LocalDate;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,9 +26,15 @@ public class ArchiveOrder extends Order {
     @Column(updatable = false)
     private LocalDate captureDate;
 
-    public ArchiveOrder(String aoi, BigDecimal price, LocalDate captureDate) {
+    @NonNull
+    @Column(updatable = false)
+    @Enumerated(EnumType.STRING)
+    private SensorType sensorType;
+
+    public ArchiveOrder(String aoi, BigDecimal price, LocalDate captureDate, SensorType sensorType) {
         super(aoi, price);
         this.captureDate = captureDate;
+        this.sensorType = sensorType;
     }
 
 }

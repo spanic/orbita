@@ -21,8 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
-import org.springframework.web.server.ResponseStatusException;
 
+import com.bmstu_bureau_1440.orders.error.OrderNotFoundException;
 import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.service.OrderService;
 
@@ -74,9 +74,7 @@ class OrdersControllerTest {
     void getOrder_returnsNotFound_whenOrderDoesNotExist() throws Exception {
         UUID orderId = UUID.randomUUID();
 
-        when(orderService.findById(orderId))
-                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Order not found: " + orderId));
+        when(orderService.findById(orderId)).thenThrow(new OrderNotFoundException());
 
         assertThat(mvcTester.perform(get("/orders/{order_id}", orderId)))
                 .hasStatus(HttpStatus.NOT_FOUND);
