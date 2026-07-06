@@ -1,46 +1,35 @@
 package com.bmstu_bureau_1440.orders.error;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
 
-    INVALID_PAYLOAD(Codes.INVALID_PAYLOAD, HttpStatus.BAD_REQUEST, "Invalid payload"),
-    INVALID_REQUEST(Codes.INVALID_REQUEST, HttpStatus.BAD_REQUEST, "Invalid request"),
-    UNKNOWN_PRODUCT_TYPE(Codes.UNKNOWN_PRODUCT_TYPE, HttpStatus.BAD_REQUEST, "Unknown product type"),
-    VALIDATION_FAILED(Codes.VALIDATION_FAILED, HttpStatus.BAD_REQUEST, "Request validation failed"),
-    INTERNAL_ERROR(Codes.INTERNAL_ERROR, HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred"),
-    ORDER_NOT_FOUND(Codes.ORDER_NOT_FOUND, HttpStatus.NOT_FOUND, "Order not found");
+    INVALID_PAYLOAD(HttpStatus.BAD_REQUEST, "Invalid payload"),
+    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),
+    UNKNOWN_PRODUCT_TYPE(HttpStatus.BAD_REQUEST, "Unknown product type"),
+    VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Request validation failed"),
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred"),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "Order not found");
 
-    @Getter
-    private final String code;
-    @Getter
     private final HttpStatus status;
-    @Getter
     private final String message;
 
+    private static final Map<String, ErrorCode> BY_NAME =
+            Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(Enum::name, Function.identity()));
+
     public static Optional<ErrorCode> byCode(String code) {
-        return Arrays.stream(values()).filter(value -> value.code.equals(code)).findFirst();
-    }
-
-    public static final class Codes {
-
-        public static final String INVALID_PAYLOAD = "INVALID_PAYLOAD";
-        public static final String INVALID_REQUEST = "INVALID_REQUEST";
-        public static final String UNKNOWN_PRODUCT_TYPE = "UNKNOWN_PRODUCT_TYPE";
-        public static final String VALIDATION_FAILED = "VALIDATION_FAILED";
-        public static final String INTERNAL_ERROR = "INTERNAL_ERROR";
-        public static final String ORDER_NOT_FOUND = "ORDER_NOT_FOUND";
-
-        private Codes() {
-        }
-
+        return Optional.ofNullable(BY_NAME.get(code));
     }
 
 }

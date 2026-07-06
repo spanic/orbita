@@ -17,7 +17,6 @@ import com.bmstu_bureau_1440.orders.dto.CreateOrderRequest;
 import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.service.OrderService;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -33,7 +32,7 @@ public class OrdersController {
     }
 
     @GetMapping(OrdersApi.ORDER_ID_PATH)
-    public Order getOrder(@PathVariable(OrdersApi.ORDER_ID_PARAM) @NotNull UUID orderId) {
+    public Order getOrder(@PathVariable(OrdersApi.ORDER_ID_PARAM) UUID orderId) {
         return orderService.findById(orderId);
     }
 
