@@ -1,4 +1,4 @@
-package com.bmstu_bureau_1440.orders.error;
+package com.bmstu_bureau_1440.shared.error;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -13,22 +13,20 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ErrorCode {
+public enum CommonErrorCode implements ErrorCode {
 
     INVALID_PAYLOAD(HttpStatus.BAD_REQUEST, "Invalid payload"),
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),
-    UNKNOWN_PRODUCT_TYPE(HttpStatus.BAD_REQUEST, "Unknown product type"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Request validation failed"),
-    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred"),
-    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "Order not found");
+    INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred");
 
     private final HttpStatus status;
     private final String message;
 
-    private static final Map<String, ErrorCode> BY_NAME =
+    private static final Map<String, CommonErrorCode> BY_NAME =
             Arrays.stream(values()).collect(Collectors.toUnmodifiableMap(Enum::name, Function.identity()));
 
-    public static Optional<ErrorCode> byCode(String code) {
+    public static Optional<CommonErrorCode> byCode(String code) {
         return Optional.ofNullable(BY_NAME.get(code));
     }
 
