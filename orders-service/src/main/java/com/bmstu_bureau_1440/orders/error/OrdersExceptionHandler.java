@@ -1,8 +1,5 @@
 package com.bmstu_bureau_1440.orders.error;
 
-import java.util.Optional;
-import java.util.function.Function;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -12,10 +9,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.bmstu_bureau_1440.shared.dto.ErrorResponse;
-import com.bmstu_bureau_1440.shared.error.CommonErrorCode;
+import com.bmstu_bureau_1440.shared.error.BaseExceptionHandler;
 import com.bmstu_bureau_1440.shared.error.ErrorCode;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,54 +18,31 @@ import tools.jackson.databind.exc.InvalidTypeIdException;
 
 @Slf4j
 @RestControllerAdvice
-public class OrdersExceptionHandler extends ResponseEntityExceptionHandler {
+public class OrdersExceptionHandler extends BaseExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<Object> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-        return toResponse(CommonErrorCode.INVALID_REQUEST);
+        return toResponse(OrdersErrorCodeRegistry.UNKNOWN_PRODUCT_TYPE);
     }
 
     @ExceptionHandler(OrderNotFoundException.class)
     public ResponseEntity<Object> handleOrderNotFound(OrderNotFoundException ex) {
-        return toResponse(OrdersErrorCode.ORDER_NOT_FOUND);
-    }
-
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleUnexpected(Exception ex) {
-        log.error("Unexpected error in orders controller", ex);
-        return toResponse(CommonErrorCode.INTERNAL_ERROR);
+        return toResponse(OrdersErrorCodeRegistry.ORDER_NOT_FOUND);
     }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
             MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        return toResponse(resolveValidationErrorCode(ex));
+        return toResponse(OrdersErrorCodeRegistry.INVALID_PAYLOAD);
     }
 
     @Override
     protected ResponseEntity<Object> handleHttpMessageNotReadable(
             HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        ErrorCode code = ex.getMostSpecificCause() instanceof InvalidTypeIdException
-                ? OrdersErrorCode.UNKNOWN_PRODUCT_TYPE
-                : CommonErrorCode.INVALID_REQUEST;
+        ErrorCode code = (ex.getMostSpecificCause() instanceof InvalidTypeIdException
+                ? OrdersErrorCodeRegistry.UNKNOWN_PRODUCT_TYPE
+                : OrdersErrorCodeRegistry.INVALID_REQUEST);
         return toResponse(code);
-    }
-
-    private static ErrorCode resolveValidationErrorCode(MethodArgumentNotValidException ex) {
-        return ex.getBindingResult().getFieldErrors().stream()
-                .findFirst()
-                .map(fe -> byCode(fe.getDefaultMessage()).orElse(CommonErrorCode.INVALID_PAYLOAD))
-                .orElse(CommonErrorCode.VALIDATION_FAILED);
-    }
-
-    private static Optional<ErrorCode> byCode(String code) {
-        return CommonErrorCode.byCode(code)
-                .<ErrorCode>map(Function.identity())
-                .or(() -> OrdersErrorCode.byCode(code).map(Function.identity()));
-    }
-
-    private static ResponseEntity<Object> toResponse(ErrorCode code) {
-        return ResponseEntity.status(code.getStatus()).body(new ErrorResponse(code));
     }
 
 }

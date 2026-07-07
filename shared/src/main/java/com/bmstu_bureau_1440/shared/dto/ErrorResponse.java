@@ -11,7 +11,7 @@ public record ErrorResponse(
         @JsonProperty("message") String message) {
 
     public ErrorResponse(ErrorCode code) {
-        this(Instant.now(), code.name(), code.getMessage());
+        this(Instant.now(), code.name(), code.message());
     }
 
 }
