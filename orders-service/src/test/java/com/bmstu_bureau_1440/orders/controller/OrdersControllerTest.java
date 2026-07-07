@@ -25,6 +25,8 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import com.bmstu_bureau_1440.orders.error.OrderNotFoundException;
 import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.service.OrderService;
+import com.bmstu_bureau_1440.shared.config.UserIdHeaderProperties;
+import com.bmstu_bureau_1440.shared.error.ErrorCodesRegistry;
 
 @ExtendWith(InstancioExtension.class)
 @WebMvcTest(OrdersController.class)
@@ -32,6 +34,9 @@ class OrdersControllerTest {
 
     @Autowired
     MockMvcTester mvcTester;
+
+    @Autowired
+    UserIdHeaderProperties userIdHeaderProperties;
 
     @MockitoBean
     OrderService orderService;
@@ -45,7 +50,8 @@ class OrdersControllerTest {
 
         when(orderService.findAll()).thenReturn(orders);
 
-        assertThat(mvcTester.perform(get("/orders")))
+        assertThat(mvcTester.perform(
+                get(OrdersApi.BASE_PATH).header(userIdHeaderProperties.userIdHeader(), "test-user-id")))
                 .hasStatus(HttpStatus.OK)
                 .hasContentType(MediaType.APPLICATION_JSON)
                 .bodyJson()
@@ -62,7 +68,8 @@ class OrdersControllerTest {
 
         when(orderService.findById(orderId)).thenReturn(order);
 
-        assertThat(mvcTester.perform(get("/orders/{order_id}", orderId)))
+        assertThat(mvcTester.perform(get(OrdersApi.BASE_PATH + OrdersApi.ORDER_ID_PATH, orderId)
+                .header(userIdHeaderProperties.userIdHeader(), "test-user-id")))
                 .hasStatus(HttpStatus.OK)
                 .hasContentType(MediaType.APPLICATION_JSON)
                 .bodyJson()
@@ -76,8 +83,18 @@ class OrdersControllerTest {
 
         when(orderService.findById(orderId)).thenThrow(new OrderNotFoundException());
 
-        assertThat(mvcTester.perform(get("/orders/{order_id}", orderId)))
+        assertThat(mvcTester.perform(get(OrdersApi.BASE_PATH + OrdersApi.ORDER_ID_PATH, orderId)
+                .header(userIdHeaderProperties.userIdHeader(), "test-user-id")))
                 .hasStatus(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    void getOrders_returnsMissingUserId_whenHeaderAbsent() throws Exception {
+        assertThat(mvcTester.perform(get(OrdersApi.BASE_PATH)))
+                .hasStatus(HttpStatus.BAD_REQUEST)
+                .bodyJson()
+                .extractingPath("$.error_code")
+                .isEqualTo(ErrorCodesRegistry.MISSING_USER_ID.name());
     }
 
 }

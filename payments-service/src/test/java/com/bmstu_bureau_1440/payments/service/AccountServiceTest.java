@@ -23,7 +23,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 
-import com.bmstu_bureau_1440.payments.dto.CreateAccountRequest;
 import com.bmstu_bureau_1440.payments.dto.TopUpAccountRequest;
 import com.bmstu_bureau_1440.payments.error.AccountAlreadyExistsException;
 import com.bmstu_bureau_1440.payments.error.AccountNotFoundException;
@@ -45,29 +44,25 @@ class AccountServiceTest {
 
     @Test
     void createAccount_returnsSavedAccount_whenUserIdIsNew() {
-        CreateAccountRequest request = Instancio.of(CreateAccountRequest.class)
-                .set(Select.field(CreateAccountRequest::userId), "fixed-user-id")
-                .create();
+        String userId = "test-user-id";
         Account account = Instancio.create(ACCOUNT_MODEL);
 
-        when(createAccountRequestMapper.apply(request)).thenReturn(account);
+        when(createAccountRequestMapper.apply(userId)).thenReturn(account);
         when(accountRepository.save(account)).thenReturn(account);
 
-        assertThat(accountService.createAccount(request)).isEqualTo(account);
+        assertThat(accountService.createAccount(userId)).isEqualTo(account);
     }
 
     @Test
     void createAccount_throwsAccountAlreadyExists_whenUserIdAlreadyHasAnAccount() {
-        CreateAccountRequest request = Instancio.of(CreateAccountRequest.class)
-                .set(Select.field(CreateAccountRequest::userId), "fixed-user-id")
-                .create();
+        String userId = "test-user-id";
         Account account = Instancio.create(ACCOUNT_MODEL);
 
-        when(createAccountRequestMapper.apply(request)).thenReturn(account);
+        when(createAccountRequestMapper.apply(userId)).thenReturn(account);
         when(accountRepository.save(account))
                 .thenThrow(new DataIntegrityViolationException("duplicate user_id"));
 
-        assertThatThrownBy(() -> accountService.createAccount(request))
+        assertThatThrownBy(() -> accountService.createAccount(userId))
                 .isInstanceOf(AccountAlreadyExistsException.class);
     }
 
@@ -77,24 +72,24 @@ class AccountServiceTest {
                 .set(Select.field(Account::getId), UUID.randomUUID())
                 .set(Select.field(Account::getBalance), BigDecimal.TEN)
                 .create();
-        TopUpAccountRequest request = new TopUpAccountRequest(account.getId().toString(), BigDecimal.ONE);
+        TopUpAccountRequest request = new TopUpAccountRequest(BigDecimal.ONE);
 
-        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
+        when(accountRepository.findByUserId(account.getUserId())).thenReturn(Optional.of(account));
         when(accountRepository.save(account)).thenReturn(account);
 
-        Account result = accountService.topUpAccount(request);
+        Account result = accountService.topUpAccount(account.getUserId(), request);
 
         assertThat(result.getBalance()).isEqualByComparingTo(BigDecimal.valueOf(11));
     }
 
     @Test
     void topUpAccount_throwsAccountNotFound_whenAccountDoesNotExist() {
-        UUID accountId = UUID.randomUUID();
-        TopUpAccountRequest request = new TopUpAccountRequest(accountId.toString(), BigDecimal.ONE);
+        String userId = "missing-user-id";
+        TopUpAccountRequest request = new TopUpAccountRequest(BigDecimal.ONE);
 
-        when(accountRepository.findById(accountId)).thenReturn(Optional.empty());
+        when(accountRepository.findByUserId(userId)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> accountService.topUpAccount(request))
+        assertThatThrownBy(() -> accountService.topUpAccount(userId, request))
                 .isInstanceOf(AccountNotFoundException.class);
         verify(accountRepository, never()).save(any());
     }
@@ -104,12 +99,12 @@ class AccountServiceTest {
         Account account = Instancio.of(Account.class)
                 .set(Select.field(Account::getId), UUID.randomUUID())
                 .create();
-        TopUpAccountRequest request = new TopUpAccountRequest(account.getId().toString(), BigDecimal.ONE);
+        TopUpAccountRequest request = new TopUpAccountRequest(BigDecimal.ONE);
 
-        when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
+        when(accountRepository.findByUserId(account.getUserId())).thenReturn(Optional.of(account));
         when(accountRepository.save(account)).thenThrow(new OptimisticLockingFailureException("stale version"));
 
-        assertThatThrownBy(() -> accountService.topUpAccount(request))
+        assertThatThrownBy(() -> accountService.topUpAccount(account.getUserId(), request))
                 .isInstanceOf(OptimisticLockingFailureException.class);
     }
 

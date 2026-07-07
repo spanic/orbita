@@ -17,6 +17,11 @@ public abstract class BaseExceptionHandler extends ResponseEntityExceptionHandle
         return toResponse(ErrorCodesRegistry.INTERNAL_ERROR);
     }
 
+    @ExceptionHandler(MissingUserIdException.class)
+    public ResponseEntity<Object> handleMissingUserId(MissingUserIdException ex) {
+        return toResponse(ErrorCodesRegistry.MISSING_USER_ID);
+    }
+
     protected static ResponseEntity<Object> toResponse(ErrorCode code) {
         return ResponseEntity.status(code.status()).body(new ErrorResponse(code));
     }

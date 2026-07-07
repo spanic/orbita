@@ -16,4 +16,9 @@ public class ErrorCodesRegistry {
             "An unexpected error occurred",
             "INTERNAL_ERROR");
 
+    public static final ErrorCode MISSING_USER_ID = new ErrorCode(
+            HttpStatus.BAD_REQUEST,
+            "X-User-Id header is required",
+            "MISSING_USER_ID");
+
 }
