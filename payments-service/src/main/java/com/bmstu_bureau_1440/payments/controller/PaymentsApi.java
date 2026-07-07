@@ -7,4 +7,5 @@ import lombok.NoArgsConstructor;
 public final class PaymentsApi {
 
     public static final String BASE_PATH = "/accounts";
+    public static final String TOP_UP_PATH = "/top-up";
 }

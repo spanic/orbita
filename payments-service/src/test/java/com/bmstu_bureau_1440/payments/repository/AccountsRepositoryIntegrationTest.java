@@ -4,6 +4,7 @@ import static com.bmstu_bureau_1440.payments.AccountTestsFixtures.ACCOUNT_MODEL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 import com.bmstu_bureau_1440.payments.TestContainersConfiguration;
 import com.bmstu_bureau_1440.payments.model.Account;
@@ -72,6 +74,21 @@ class AccountsRepositoryIntegrationTest {
 
         assertThatThrownBy(() -> accountRepository.saveAndFlush(duplicate))
                 .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void save_throwsOptimisticLockingFailure_whenAccountWasConcurrentlyModified() {
+        Account account = accountRepository.saveAndFlush(Instancio.create(ACCOUNT_MODEL));
+
+        Account firstRead = accountRepository.findById(account.getId()).orElseThrow();
+        Account secondRead = accountRepository.findById(account.getId()).orElseThrow();
+
+        firstRead.topUp(BigDecimal.TEN);
+        accountRepository.saveAndFlush(firstRead);
+
+        secondRead.topUp(BigDecimal.ONE);
+        assertThatThrownBy(() -> accountRepository.saveAndFlush(secondRead))
+                .isInstanceOf(OptimisticLockingFailureException.class);
     }
 
 }

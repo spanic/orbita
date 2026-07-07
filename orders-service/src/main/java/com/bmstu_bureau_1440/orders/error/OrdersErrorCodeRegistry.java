@@ -9,6 +9,11 @@ import com.bmstu_bureau_1440.shared.error.ErrorCodesRegistry;
 @Component
 public final class OrdersErrorCodeRegistry extends ErrorCodesRegistry {
 
+    public static final ErrorCode INVALID_PAYLOAD = new ErrorCode(
+            HttpStatus.BAD_REQUEST,
+            "Invalid payload",
+            "INVALID_PAYLOAD");
+
     public static final ErrorCode UNKNOWN_PRODUCT_TYPE = new ErrorCode(
             HttpStatus.BAD_REQUEST,
             "Unknown product type",

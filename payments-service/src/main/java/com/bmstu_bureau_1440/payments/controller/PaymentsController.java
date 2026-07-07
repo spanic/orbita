@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bmstu_bureau_1440.payments.dto.CreateAccountRequest;
+import com.bmstu_bureau_1440.payments.dto.TopUpAccountRequest;
 import com.bmstu_bureau_1440.payments.model.Account;
 import com.bmstu_bureau_1440.payments.service.AccountService;
 
@@ -33,6 +34,11 @@ public class PaymentsController {
     @ResponseStatus(HttpStatus.CREATED)
     public Account createPayment(@RequestBody @Validated CreateAccountRequest request) {
         return accountService.createAccount(request);
+    }
+
+    @PostMapping(PaymentsApi.TOP_UP_PATH)
+    public Account topUpAccount(@RequestBody @Validated TopUpAccountRequest request) {
+        return accountService.topUpAccount(request);
     }
 
 }

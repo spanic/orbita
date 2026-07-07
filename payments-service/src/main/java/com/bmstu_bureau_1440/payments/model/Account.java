@@ -14,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -47,5 +48,13 @@ public class Account {
     @NonNull
     @Column(nullable = false)
     private BigDecimal balance = BigDecimal.ZERO;
+
+    @Version
+    @Column(nullable = false)
+    private long version;
+
+    public void topUp(BigDecimal amount) {
+        this.balance = this.balance.add(amount);
+    }
 
 }
