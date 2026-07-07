@@ -1,8 +1,8 @@
-package com.bmstu_bureau_1440.orders.dto;
+package com.bmstu_bureau_1440.shared.dto;
 
 import java.time.Instant;
 
-import com.bmstu_bureau_1440.orders.error.ErrorCode;
+import com.bmstu_bureau_1440.shared.error.ErrorCode;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record ErrorResponse(
@@ -11,7 +11,7 @@ public record ErrorResponse(
         @JsonProperty("message") String message) {
 
     public ErrorResponse(ErrorCode code) {
-        this(Instant.now(), code.name(), code.getMessage());
+        this(Instant.now(), code.name(), code.message());
     }
 
 }

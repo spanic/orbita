@@ -41,7 +41,7 @@ public class Account {
     private LocalDateTime createdAt;
 
     @NonNull
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false, updatable = false, unique = true)
     private String userId;
 
     @NonNull

@@ -2,6 +2,7 @@ package com.bmstu_bureau_1440.payments.repository;
 
 import static com.bmstu_bureau_1440.payments.AccountTestsFixtures.ACCOUNT_MODEL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.bmstu_bureau_1440.payments.TestContainersConfiguration;
 import com.bmstu_bureau_1440.payments.model.Account;
@@ -61,6 +63,15 @@ class AccountsRepositoryIntegrationTest {
         assertThat(found)
                 .hasSameSizeAs(accounts)
                 .containsExactlyElementsOf(accounts);
+    }
+
+    @Test
+    void save_throwsDataIntegrityViolation_whenUserIdAlreadyHasAnAccount() {
+        Account account = accountRepository.saveAndFlush(Instancio.create(ACCOUNT_MODEL));
+        Account duplicate = new Account(account.getUserId());
+
+        assertThatThrownBy(() -> accountRepository.saveAndFlush(duplicate))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
 }

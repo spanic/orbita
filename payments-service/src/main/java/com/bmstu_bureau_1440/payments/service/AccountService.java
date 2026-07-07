@@ -2,9 +2,11 @@ package com.bmstu_bureau_1440.payments.service;
 
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.bmstu_bureau_1440.payments.dto.CreateAccountRequest;
+import com.bmstu_bureau_1440.payments.error.AccountAlreadyExistsException;
 import com.bmstu_bureau_1440.payments.mapper.CreateAccountRequestMapper;
 import com.bmstu_bureau_1440.payments.model.Account;
 import com.bmstu_bureau_1440.payments.repository.AccountRepository;
@@ -24,7 +26,11 @@ public class AccountService {
     }
 
     public Account createAccount(CreateAccountRequest request) {
-        return accountRepository.save(createAccountRequestMapper.apply(request));
+        try {
+            return accountRepository.save(createAccountRequestMapper.apply(request));
+        } catch (DataIntegrityViolationException e) {
+            throw new AccountAlreadyExistsException();
+        }
     }
 
 }
