@@ -1,6 +1,6 @@
 package com.bmstu_bureau_1440.orders.mapper;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.springframework.stereotype.Component;
 
@@ -13,13 +13,14 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class ArchivePayloadMapper implements Function<ArchivePayload, Order> {
+public class ArchivePayloadMapper implements BiFunction<String, ArchivePayload, Order> {
 
     private final PricingProperties pricingProperties;
 
     @Override
-    public Order apply(ArchivePayload payload) {
+    public Order apply(String userId, ArchivePayload payload) {
         return new ArchiveOrder(
+                userId,
                 payload.aoi(),
                 pricingProperties.unitPrice(),
                 payload.captureDate(),

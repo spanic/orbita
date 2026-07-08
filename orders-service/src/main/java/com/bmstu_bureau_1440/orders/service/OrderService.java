@@ -23,17 +23,17 @@ public class OrderService {
 
     private final PayloadMapperRegistry payloadMapperRegistry;
 
-    public List<Order> findAll() {
-        return orderRepository.findAll();
+    public List<Order> findAll(String userId) {
+        return orderRepository.findAllByUserId(userId);
     }
 
-    public Order findById(UUID orderId) {
-        return orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+    public Order findById(UUID orderId, String userId) {
+        return orderRepository.findByIdAndUserId(orderId, userId).orElseThrow(OrderNotFoundException::new);
     }
 
     @Transactional
-    public Order create(CreateOrderRequest request) {
-        return orderRepository.save(payloadMapperRegistry.map(request.payload()));
+    public Order create(String userId, CreateOrderRequest request) {
+        return orderRepository.save(payloadMapperRegistry.map(userId, request.payload()));
     }
 
 }

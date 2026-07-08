@@ -1,7 +1,7 @@
 package com.bmstu_bureau_1440.orders.mapper;
 
 import java.math.BigDecimal;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.springframework.stereotype.Component;
 
@@ -14,17 +14,17 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class MonitoringPayloadMapper implements Function<MonitoringPayload, Order> {
+public class MonitoringPayloadMapper implements BiFunction<String, MonitoringPayload, Order> {
 
     private final PricingProperties pricingProperties;
 
     @Override
-    public Order apply(MonitoringPayload payload) {
+    public Order apply(String userId, MonitoringPayload payload) {
         int intervalDays = payload.cadence().getIntervalDays();
         int observations = (payload.durationDays() + intervalDays - 1) / intervalDays;
         BigDecimal price = pricingProperties.unitPrice().multiply(BigDecimal.valueOf(observations));
 
-        return new MonitoringOrder(payload.aoi(), price, payload.cadence(), payload.durationDays());
+        return new MonitoringOrder(userId, payload.aoi(), price, payload.cadence(), payload.durationDays());
     }
 
 }

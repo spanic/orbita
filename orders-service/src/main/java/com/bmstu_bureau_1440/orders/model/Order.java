@@ -58,6 +58,10 @@ public abstract class Order {
 
     @NonNull
     @Column(nullable = false, updatable = false)
+    private String userId;
+
+    @NonNull
+    @Column(nullable = false, updatable = false)
     private String aoi;
 
     @NonNull

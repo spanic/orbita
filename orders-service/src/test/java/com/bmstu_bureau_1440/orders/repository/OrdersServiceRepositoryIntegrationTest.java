@@ -4,6 +4,7 @@ import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.ARCHIVE_ORDER_MODE
 import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.MONITORING_ORDER_MODEL;
 import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.TASKING_ORDER_MODEL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.instancio.Select.field;
 
 import java.util.List;
 import java.util.Optional;
@@ -74,6 +75,29 @@ class OrdersServiceRepositoryIntegrationTest {
         assertThat(found)
                 .hasSameSizeAs(orders)
                 .containsExactlyElementsOf(orders);
+    }
+
+    @ParameterizedTest
+    @MethodSource("orderModels")
+    void findAllByUserId_returnsOnlyThatUsersOrders(Model<? extends Order> orderModel) {
+        Order ownOrder = orderRepository.save(
+                Instancio.of(orderModel).set(field(Order::getUserId), "user-1").create());
+        orderRepository.save(Instancio.of(orderModel).set(field(Order::getUserId), "user-2").create());
+
+        List<Order> found = orderRepository.findAllByUserId("user-1");
+
+        assertThat(found).containsExactly(ownOrder);
+    }
+
+    @ParameterizedTest
+    @MethodSource("orderModels")
+    void findByIdAndUserId_returnsEmpty_whenOrderBelongsToDifferentUser(Model<? extends Order> orderModel) {
+        Order order = orderRepository.save(
+                Instancio.of(orderModel).set(field(Order::getUserId), "user-1").create());
+
+        Optional<Order> found = orderRepository.findByIdAndUserId(order.getId(), "user-2");
+
+        assertThat(found).isEmpty();
     }
 
 }

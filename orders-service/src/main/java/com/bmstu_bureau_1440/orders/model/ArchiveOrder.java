@@ -31,8 +31,8 @@ public class ArchiveOrder extends Order {
     @Enumerated(EnumType.STRING)
     private SensorType sensorType;
 
-    public ArchiveOrder(String aoi, BigDecimal price, LocalDate captureDate, SensorType sensorType) {
-        super(aoi, price);
+    public ArchiveOrder(String userId, String aoi, BigDecimal price, LocalDate captureDate, SensorType sensorType) {
+        super(userId, aoi, price);
         this.captureDate = captureDate;
         this.sensorType = sensorType;
     }

@@ -36,9 +36,9 @@ public class TaskingOrder extends Order {
     @Column(updatable = false)
     private SensorType sensorType;
 
-    public TaskingOrder(String aoi, BigDecimal price, Instant timeWindowStart, Instant timeWindowEnd,
+    public TaskingOrder(String userId, String aoi, BigDecimal price, Instant timeWindowStart, Instant timeWindowEnd,
             SensorType sensorType) {
-        super(aoi, price);
+        super(userId, aoi, price);
         this.timeWindowStart = timeWindowStart;
         this.timeWindowEnd = timeWindowEnd;
         this.sensorType = sensorType;

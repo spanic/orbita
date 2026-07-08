@@ -30,8 +30,8 @@ public class MonitoringOrder extends Order {
     @Column(updatable = false)
     private Integer durationDays;
 
-    public MonitoringOrder(String aoi, BigDecimal price, Cadence cadence, Integer durationDays) {
-        super(aoi, price);
+    public MonitoringOrder(String userId, String aoi, BigDecimal price, Cadence cadence, Integer durationDays) {
+        super(userId, aoi, price);
         this.cadence = cadence;
         this.durationDays = durationDays;
     }
