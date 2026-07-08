@@ -1,10 +1,3 @@
-# Local orchestration for the whole stack: one PostgreSQL per service, one shared
-# Kafka broker, and the two services. A starting point — tune for your needs.
-#
-#   docker compose up --build
-#
-# Endpoints once up:  orders -> http://localhost:8081/hello   payments -> http://localhost:8082/hello
-
 services:
   postgres-orders:
     image: postgres:16-alpine
@@ -61,8 +54,6 @@ services:
       ORDERS_DB_USER: orders
       ORDERS_DB_PASSWORD: orders
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-    ports:
-      - "8081:8081"
 
   payments-service:
     build:
@@ -77,8 +68,16 @@ services:
       PAYMENTS_DB_USER: payments
       PAYMENTS_DB_PASSWORD: payments
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+  gateway:
+    build:
+      context: gateway
+    container_name: orbita-gateway
+    depends_on:
+      - orders-service
+      - payments-service
     ports:
-      - "8082:8082"
+      - "8080:8080"
 
 volumes:
   orders-db:

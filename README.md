@@ -1,19 +1,25 @@
 # Orbita
 
 Multi-module Spring Boot 4 project. Two independently deployable services backed by
-their own PostgreSQL database and a shared Kafka broker, plus a lightweight shared
-utilities module.
+their own PostgreSQL database and a shared Kafka broker, an nginx API gateway in
+front of them, plus a lightweight shared utilities module.
 
 ## Modules
 
-| Module             | Type           | Description                                          |
-| ------------------ | -------------- | ---------------------------------------------------- |
-| `shared`           | library jar    | Cross-service utilities. Framework-light on purpose. |
-| `orders-service`   | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8081`.      |
-| `payments-service` | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8082`.      |
+| Module             | Type           | Description                                                     |
+| ------------------ | -------------- | ----------------------------------------------------------------- |
+| `shared`           | library jar    | Cross-service utilities. Framework-light on purpose.            |
+| `orders-service`   | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8081`, base path `/api/v1/orders`.     |
+| `payments-service` | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8082`, base path `/api/v1/payments`.   |
+| `gateway`          | nginx image    | `nginxinc/nginx-unprivileged` reverse proxy in front of both services. HTTP on `:8080`. |
 
 Each service exposes a `GET /hello` endpoint (returns a greeting built via the
-`shared` module) and Actuator health/info at `/actuator/health`, `/actuator/info`.
+`shared` module) and Actuator health/info at `/actuator/health`, `/actuator/info`
+(all under the service's base path, e.g. `/api/v1/orders/hello`).
+
+The gateway is the only entry point exposed to the host; it proxies:
+- `/orders/**` -> `orders-service` at `/api/v1/orders/orders/**`
+- `/payments/**` -> `payments-service` at `/api/v1/payments/accounts/**`
 
 ## Tech stack
 
@@ -61,12 +67,13 @@ provided by Testcontainers — no manual setup. Run it from your IDE, or:
 ## Containers
 
 Each service has a multi-stage `Dockerfile` (build context is the repo root so the
-`shared` module is available). Bring up the full stack with:
+`shared` module is available). `orders-service` and `payments-service` are not
+published on the host — only the `gateway` is. Bring up the full stack with:
 
 ```bash
 docker compose up --build
-# orders   -> http://localhost:8081/hello
-# payments -> http://localhost:8082/hello
+# orders   -> http://localhost:8080/orders
+# payments -> http://localhost:8080/payments/accounts
 ```
 
 ## Configuration
