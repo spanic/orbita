@@ -14,9 +14,8 @@ import com.bmstu_bureau_1440.orders.mapper.PayloadMapperRegistry;
 import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.model.OrderStatus;
 import com.bmstu_bureau_1440.orders.repository.OrderRepository;
-import com.bmstu_bureau_1440.shared.event.OrderPaymentCompletedEvent;
-import com.bmstu_bureau_1440.shared.event.OrderPaymentFailedEvent;
 import com.bmstu_bureau_1440.shared.event.OrderPaymentRequestedEvent;
+import com.bmstu_bureau_1440.shared.event.OrderPaymentResultEvent;
 import com.bmstu_bureau_1440.shared.event.PaymentTopics;
 import com.bmstu_bureau_1440.shared.outbox.OutboxEventWriter;
 
@@ -64,20 +63,19 @@ public class OrderService {
         return order;
     }
 
-    @KafkaListener(topics = PaymentTopics.ORDER_PAYMENT_COMPLETED)
+    @KafkaListener(topics = PaymentTopics.ORDER_PAYMENT_RESULT)
     @Transactional
-    public void onPaymentCompleted(String payload) {
-        applyPaymentCompleted(objectMapper.readValue(payload, OrderPaymentCompletedEvent.class));
+    public void onPaymentResult(String payload) {
+        OrderPaymentResultEvent event = objectMapper.readValue(payload, OrderPaymentResultEvent.class);
+
+        switch (event.outcome()) {
+            case COMPLETED -> applyPaymentCompleted(event);
+            case FAILED -> applyPaymentFailed(event);
+        }
     }
 
-    @KafkaListener(topics = PaymentTopics.ORDER_PAYMENT_FAILED)
     @Transactional
-    public void onPaymentFailed(String payload) {
-        applyPaymentFailed(objectMapper.readValue(payload, OrderPaymentFailedEvent.class));
-    }
-
-    @Transactional
-    public void applyPaymentCompleted(OrderPaymentCompletedEvent event) {
+    public void applyPaymentCompleted(OrderPaymentResultEvent event) {
         orderRepository.findById(event.orderId()).ifPresentOrElse(order -> {
             if (order.getStatus() == OrderStatus.PAYMENT_PENDING) {
                 order.setStatus(OrderStatus.PAID);
@@ -89,7 +87,7 @@ public class OrderService {
     }
 
     @Transactional
-    public void applyPaymentFailed(OrderPaymentFailedEvent event) {
+    public void applyPaymentFailed(OrderPaymentResultEvent event) {
         orderRepository.findById(event.orderId()).ifPresentOrElse(order -> {
             if (order.getStatus() == OrderStatus.PAYMENT_PENDING) {
                 order.setStatus(OrderStatus.PAYMENT_FAILED);

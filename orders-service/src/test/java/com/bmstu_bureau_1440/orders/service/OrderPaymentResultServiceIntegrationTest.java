@@ -4,13 +4,11 @@ import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.ARCHIVE_ORDER_MODE
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.instancio.Select.field;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.UUID;
-
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -19,9 +17,9 @@ import com.bmstu_bureau_1440.orders.TestContainersConfiguration;
 import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.model.OrderStatus;
 import com.bmstu_bureau_1440.orders.repository.OrderRepository;
-import com.bmstu_bureau_1440.shared.event.OrderPaymentCompletedEvent;
-import com.bmstu_bureau_1440.shared.event.OrderPaymentFailedEvent;
+import com.bmstu_bureau_1440.shared.event.OrderPaymentResultEvent;
 import com.bmstu_bureau_1440.shared.event.PaymentFailureReason;
+import com.bmstu_bureau_1440.shared.event.PaymentResultOutcome;
 
 import tools.jackson.databind.ObjectMapper;
 
@@ -43,42 +41,35 @@ class OrderPaymentResultServiceIntegrationTest {
         orderRepository.deleteAll();
     }
 
-    @Test
-    void onPaymentCompleted_marksPendingOrderAsPaid_whenInvokedViaTheListenerEntryPoint() {
+    @ParameterizedTest
+    @EnumSource(PaymentResultOutcome.class)
+    void onPaymentResult_marksPendingOrderAccordingToOutcome_whenInvokedViaTheListenerEntryPoint(
+            PaymentResultOutcome outcome) {
         Order order = orderRepository.save(pendingOrder());
 
-        orderService.onPaymentCompleted(objectMapper.writeValueAsString(completedEventFor(order)));
+        orderService.onPaymentResult(objectMapper.writeValueAsString(eventFor(order, outcome)));
 
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
-                .isEqualTo(OrderStatus.PAID);
+                .isEqualTo(statusFor(outcome));
     }
 
-    @Test
-    void onPaymentFailed_marksPendingOrderAsPaymentFailed_whenInvokedViaTheListenerEntryPoint() {
+    @ParameterizedTest
+    @EnumSource(PaymentResultOutcome.class)
+    void applyPaymentResult_marksPendingOrderAccordingToOutcome(PaymentResultOutcome outcome) {
         Order order = orderRepository.save(pendingOrder());
 
-        orderService.onPaymentFailed(objectMapper.writeValueAsString(failedEventFor(order)));
+        apply(order, eventFor(order, outcome));
 
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
-                .isEqualTo(OrderStatus.PAYMENT_FAILED);
-    }
-
-    @Test
-    void applyPaymentCompleted_marksPendingOrderAsPaid() {
-        Order order = orderRepository.save(pendingOrder());
-
-        orderService.applyPaymentCompleted(completedEventFor(order));
-
-        assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
-                .isEqualTo(OrderStatus.PAID);
+                .isEqualTo(statusFor(outcome));
     }
 
     @Test
     void applyPaymentCompleted_isIdempotent_whenOrderAlreadyPaid() {
         Order order = orderRepository.save(pendingOrder());
-        orderService.applyPaymentCompleted(completedEventFor(order));
+        orderService.applyPaymentCompleted(eventFor(order, PaymentResultOutcome.COMPLETED));
 
-        orderService.applyPaymentCompleted(completedEventFor(order));
+        orderService.applyPaymentCompleted(eventFor(order, PaymentResultOutcome.COMPLETED));
 
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
                 .isEqualTo(OrderStatus.PAID);
@@ -87,19 +78,9 @@ class OrderPaymentResultServiceIntegrationTest {
     @Test
     void applyPaymentCompleted_doesNotOverridePaymentFailed() {
         Order order = orderRepository.save(pendingOrder());
-        orderService.applyPaymentFailed(failedEventFor(order));
+        orderService.applyPaymentFailed(eventFor(order, PaymentResultOutcome.FAILED));
 
-        orderService.applyPaymentCompleted(completedEventFor(order));
-
-        assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
-                .isEqualTo(OrderStatus.PAYMENT_FAILED);
-    }
-
-    @Test
-    void applyPaymentFailed_marksPendingOrderAsPaymentFailed() {
-        Order order = orderRepository.save(pendingOrder());
-
-        orderService.applyPaymentFailed(failedEventFor(order));
+        orderService.applyPaymentCompleted(eventFor(order, PaymentResultOutcome.COMPLETED));
 
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
                 .isEqualTo(OrderStatus.PAYMENT_FAILED);
@@ -107,10 +88,22 @@ class OrderPaymentResultServiceIntegrationTest {
 
     @Test
     void applyPaymentCompleted_doesNotThrow_whenOrderDoesNotExist() {
-        OrderPaymentCompletedEvent event = new OrderPaymentCompletedEvent(
-                UUID.randomUUID(), UUID.randomUUID(), "test-user-id", BigDecimal.TEN, Instant.now(), BigDecimal.ONE);
+        orderService.applyPaymentCompleted(Instancio.of(OrderPaymentResultEvent.class)
+                .set(field(OrderPaymentResultEvent::outcome), PaymentResultOutcome.COMPLETED)
+                .set(field(OrderPaymentResultEvent::failureReason), null)
+                .create());
+    }
 
-        orderService.applyPaymentCompleted(event);
+    private void apply(Order order, OrderPaymentResultEvent event) {
+        if (event.outcome() == PaymentResultOutcome.COMPLETED) {
+            orderService.applyPaymentCompleted(event);
+        } else {
+            orderService.applyPaymentFailed(event);
+        }
+    }
+
+    private static OrderStatus statusFor(PaymentResultOutcome outcome) {
+        return outcome == PaymentResultOutcome.COMPLETED ? OrderStatus.PAID : OrderStatus.PAYMENT_FAILED;
     }
 
     private static Order pendingOrder() {
@@ -119,16 +112,14 @@ class OrderPaymentResultServiceIntegrationTest {
                 .create();
     }
 
-    private static OrderPaymentCompletedEvent completedEventFor(Order order) {
-        return new OrderPaymentCompletedEvent(
-                UUID.randomUUID(), order.getId(), order.getUserId(), order.getPrice(), Instant.now(),
-                BigDecimal.ZERO);
-    }
-
-    private static OrderPaymentFailedEvent failedEventFor(Order order) {
-        return new OrderPaymentFailedEvent(
-                UUID.randomUUID(), order.getId(), order.getUserId(), PaymentFailureReason.INSUFFICIENT_BALANCE,
-                Instant.now());
+    private static OrderPaymentResultEvent eventFor(Order order, PaymentResultOutcome outcome) {
+        return Instancio.of(OrderPaymentResultEvent.class)
+                .set(field(OrderPaymentResultEvent::orderId), order.getId())
+                .set(field(OrderPaymentResultEvent::userId), order.getUserId())
+                .set(field(OrderPaymentResultEvent::outcome), outcome)
+                .set(field(OrderPaymentResultEvent::failureReason),
+                        outcome == PaymentResultOutcome.FAILED ? PaymentFailureReason.INSUFFICIENT_BALANCE : null)
+                .create();
     }
 
 }

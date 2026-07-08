@@ -1,10 +1,10 @@
 package com.bmstu_bureau_1440.orders.controller;
 
 import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.ARCHIVE_ORDER_MODEL;
+import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.ARCHIVE_ORDER_REQUEST_MODEL;
 import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.MONITORING_ORDER_MODEL;
 import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.TASKING_ORDER_MODEL;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.instancio.Select.field;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
@@ -26,11 +26,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
-import com.bmstu_bureau_1440.orders.dto.ArchivePayload;
 import com.bmstu_bureau_1440.orders.dto.CreateOrderRequest;
 import com.bmstu_bureau_1440.orders.error.OrderNotFoundException;
 import com.bmstu_bureau_1440.orders.model.Order;
-import com.bmstu_bureau_1440.orders.model.OrderTypes;
 import com.bmstu_bureau_1440.orders.service.OrderService;
 import com.bmstu_bureau_1440.shared.config.UserIdHeaderProperties;
 import com.bmstu_bureau_1440.shared.error.ErrorCodesRegistry;
@@ -113,10 +111,7 @@ class OrdersControllerTest {
 
     @Test
     void createOrder_savesOrderWithRequestingUsersId() throws Exception {
-        CreateOrderRequest request = Instancio.of(CreateOrderRequest.class)
-                .set(field(CreateOrderRequest::payload), Instancio.create(ArchivePayload.class))
-                .set(field(CreateOrderRequest::type), OrderTypes.ARCHIVE)
-                .create();
+        CreateOrderRequest request = Instancio.create(ARCHIVE_ORDER_REQUEST_MODEL);
         Order order = Instancio.create(ARCHIVE_ORDER_MODEL);
 
         when(orderService.create(eq("test-user-id"), any(CreateOrderRequest.class))).thenReturn(order);

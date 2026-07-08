@@ -5,9 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.instancio.Select.field;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -107,7 +105,10 @@ class PaymentProcessingServiceIntegrationTest {
     }
 
     private static OrderPaymentRequestedEvent requestFor(String userId, BigDecimal amount) {
-        return new OrderPaymentRequestedEvent(UUID.randomUUID(), UUID.randomUUID(), userId, amount, Instant.now());
+        return Instancio.of(OrderPaymentRequestedEvent.class)
+                .set(field(OrderPaymentRequestedEvent::userId), userId)
+                .set(field(OrderPaymentRequestedEvent::amount), amount)
+                .create();
     }
 
 }

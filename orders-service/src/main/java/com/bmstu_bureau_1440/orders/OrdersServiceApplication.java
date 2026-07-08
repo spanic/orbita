@@ -8,10 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.bmstu_bureau_1440.shared.config.UserIdHeaderProperties;
 
-@SpringBootApplication(scanBasePackages = {
-        "com.bmstu_bureau_1440.orders",
-        "com.bmstu_bureau_1440.shared"
-})
+@SpringBootApplication(scanBasePackages = "com.bmstu_bureau_1440")
 @ConfigurationPropertiesScan
 @EnableConfigurationProperties(UserIdHeaderProperties.class)
 @EnableScheduling

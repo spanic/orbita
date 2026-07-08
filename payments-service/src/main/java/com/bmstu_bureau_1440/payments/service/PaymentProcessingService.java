@@ -11,10 +11,10 @@ import com.bmstu_bureau_1440.payments.model.Account;
 import com.bmstu_bureau_1440.payments.model.PaymentTransaction;
 import com.bmstu_bureau_1440.payments.repository.AccountRepository;
 import com.bmstu_bureau_1440.payments.repository.PaymentTransactionRepository;
-import com.bmstu_bureau_1440.shared.event.OrderPaymentCompletedEvent;
-import com.bmstu_bureau_1440.shared.event.OrderPaymentFailedEvent;
 import com.bmstu_bureau_1440.shared.event.OrderPaymentRequestedEvent;
+import com.bmstu_bureau_1440.shared.event.OrderPaymentResultEvent;
 import com.bmstu_bureau_1440.shared.event.PaymentFailureReason;
+import com.bmstu_bureau_1440.shared.event.PaymentResultOutcome;
 import com.bmstu_bureau_1440.shared.event.PaymentTopics;
 import com.bmstu_bureau_1440.shared.outbox.OutboxEventWriter;
 
@@ -74,14 +74,16 @@ public class PaymentProcessingService {
         outboxEventWriter.enqueue(
                 transaction.getOrderId(),
                 "ORDER_PAYMENT_COMPLETED",
-                PaymentTopics.ORDER_PAYMENT_COMPLETED,
-                new OrderPaymentCompletedEvent(
+                PaymentTopics.ORDER_PAYMENT_RESULT,
+                new OrderPaymentResultEvent(
                         UUID.randomUUID(),
                         transaction.getOrderId(),
                         transaction.getUserId(),
                         transaction.getAmount(),
-                        Instant.now(),
-                        transaction.getBalanceAfter()));
+                        PaymentResultOutcome.COMPLETED,
+                        null,
+                        transaction.getBalanceAfter(),
+                        Instant.now()));
     }
 
     private void recordAndEnqueueFailure(OrderPaymentRequestedEvent event, PaymentFailureReason reason) {
@@ -91,12 +93,15 @@ public class PaymentProcessingService {
         outboxEventWriter.enqueue(
                 transaction.getOrderId(),
                 "ORDER_PAYMENT_FAILED",
-                PaymentTopics.ORDER_PAYMENT_FAILED,
-                new OrderPaymentFailedEvent(
+                PaymentTopics.ORDER_PAYMENT_RESULT,
+                new OrderPaymentResultEvent(
                         UUID.randomUUID(),
                         transaction.getOrderId(),
                         transaction.getUserId(),
+                        transaction.getAmount(),
+                        PaymentResultOutcome.FAILED,
                         transaction.getFailureReason(),
+                        null,
                         Instant.now()));
     }
 

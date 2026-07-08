@@ -8,8 +8,6 @@ public final class PaymentTopics {
 
     public static final String ORDER_PAYMENT_REQUESTED = "order-payment-requested";
 
-    public static final String ORDER_PAYMENT_COMPLETED = "order-payment-completed";
-
-    public static final String ORDER_PAYMENT_FAILED = "order-payment-failed";
+    public static final String ORDER_PAYMENT_RESULT = "order-payment-result";
 
 }

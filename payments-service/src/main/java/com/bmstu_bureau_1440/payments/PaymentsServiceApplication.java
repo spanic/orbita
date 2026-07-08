@@ -7,10 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.bmstu_bureau_1440.shared.config.UserIdHeaderProperties;
 
-@SpringBootApplication(scanBasePackages = {
-        "com.bmstu_bureau_1440.payments",
-        "com.bmstu_bureau_1440.shared"
-})
+@SpringBootApplication(scanBasePackages = "com.bmstu_bureau_1440")
 @EnableConfigurationProperties(UserIdHeaderProperties.class)
 @EnableScheduling
 public class PaymentsServiceApplication {

@@ -4,11 +4,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
-public record OrderPaymentCompletedEvent(
+public record OrderPaymentResultEvent(
         UUID eventId,
         UUID orderId,
         String userId,
         BigDecimal amount,
-        Instant occurredAt,
-        BigDecimal newBalance) {
+        PaymentResultOutcome outcome,
+        PaymentFailureReason failureReason,
+        BigDecimal newBalance,
+        Instant occurredAt) {
 }

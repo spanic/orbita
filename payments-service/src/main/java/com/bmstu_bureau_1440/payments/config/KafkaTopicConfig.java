@@ -11,13 +11,8 @@ import com.bmstu_bureau_1440.shared.event.PaymentTopics;
 public class KafkaTopicConfig {
 
     @Bean
-    NewTopic orderPaymentCompletedTopic() {
-        return TopicBuilder.name(PaymentTopics.ORDER_PAYMENT_COMPLETED).build();
-    }
-
-    @Bean
-    NewTopic orderPaymentFailedTopic() {
-        return TopicBuilder.name(PaymentTopics.ORDER_PAYMENT_FAILED).build();
+    NewTopic orderPaymentResultTopic() {
+        return TopicBuilder.name(PaymentTopics.ORDER_PAYMENT_RESULT).build();
     }
 
 }
