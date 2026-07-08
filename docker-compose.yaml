@@ -8,6 +8,7 @@
 services:
   postgres-orders:
     image: postgres:16-alpine
+    container_name: orbita-postgres-orders
     environment:
       POSTGRES_DB: orders
       POSTGRES_USER: orders
@@ -19,6 +20,7 @@ services:
 
   postgres-payments:
     image: postgres:16-alpine
+    container_name: orbita-postgres-payments
     environment:
       POSTGRES_DB: payments
       POSTGRES_USER: payments
@@ -30,6 +32,7 @@ services:
 
   kafka:
     image: apache/kafka-native:3.8.0
+    container_name: orbita-kafka
     ports:
       - "9092:9092"
     environment:
@@ -49,6 +52,7 @@ services:
     build:
       context: .
       dockerfile: orders-service/Dockerfile
+    container_name: orbita-orders-service
     depends_on:
       - postgres-orders
       - kafka
@@ -64,6 +68,7 @@ services:
     build:
       context: .
       dockerfile: payments-service/Dockerfile
+    container_name: orbita-payments-service
     depends_on:
       - postgres-payments
       - kafka

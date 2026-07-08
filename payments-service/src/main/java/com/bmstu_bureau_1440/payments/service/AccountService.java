@@ -34,9 +34,7 @@ public class AccountService {
 
     public Account topUpAccount(String userId, TopUpAccountRequest request) {
         Account account = accountRepository.findByUserId(userId).orElseThrow(AccountNotFoundException::new);
-
         account.topUp(request.amount());
-
         return accountRepository.save(account);
     }
 

@@ -3,11 +3,16 @@ package com.bmstu_bureau_1440.payments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.bmstu_bureau_1440.shared.config.UserIdHeaderProperties;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {
+        "com.bmstu_bureau_1440.payments",
+        "com.bmstu_bureau_1440.shared"
+})
 @EnableConfigurationProperties(UserIdHeaderProperties.class)
+@EnableScheduling
 public class PaymentsServiceApplication {
 
     public static void main(String[] args) {

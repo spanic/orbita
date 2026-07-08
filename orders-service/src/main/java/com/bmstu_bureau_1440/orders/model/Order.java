@@ -15,6 +15,8 @@ import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,6 +29,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "orders")
@@ -67,5 +70,19 @@ public abstract class Order {
     @NonNull
     @Column(nullable = false)
     private BigDecimal price;
+
+    @NonNull
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus status = OrderStatus.PAYMENT_PENDING;
+
+    public void markPaid() {
+        this.status = OrderStatus.PAID;
+    }
+
+    public void markPaymentFailed() {
+        this.status = OrderStatus.PAYMENT_FAILED;
+    }
 
 }

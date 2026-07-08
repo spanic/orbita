@@ -1,0 +1,18 @@
+package com.bmstu_bureau_1440.orders.config;
+
+import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.TopicBuilder;
+
+import com.bmstu_bureau_1440.shared.event.PaymentTopics;
+
+@Configuration
+public class KafkaTopicConfig {
+
+    @Bean
+    NewTopic orderPaymentRequestedTopic() {
+        return TopicBuilder.name(PaymentTopics.ORDER_PAYMENT_REQUESTED).build();
+    }
+
+}

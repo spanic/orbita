@@ -1,6 +1,6 @@
-package com.bmstu_bureau_1440.payments.model;
+package com.bmstu_bureau_1440.shared.outbox;
 
-import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -14,7 +14,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -23,14 +22,14 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "outbox_events")
 @EntityListeners(AuditingEntityListener.class)
 
 @Getter
 @RequiredArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
-public class Account {
+public class OutboxEvent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,23 +41,26 @@ public class Account {
     private LocalDateTime createdAt;
 
     @NonNull
-    @Column(nullable = false, updatable = false, unique = true)
-    private String userId;
+    @Column(nullable = false, updatable = false)
+    private UUID aggregateId;
 
     @NonNull
-    @Column(nullable = false)
-    private BigDecimal balance = BigDecimal.ZERO;
+    @Column(nullable = false, updatable = false)
+    private String eventType;
 
-    @Version
-    @Column(nullable = false)
-    private long version;
+    @NonNull
+    @Column(nullable = false, updatable = false)
+    private String topic;
 
-    public void topUp(BigDecimal amount) {
-        this.balance = this.balance.add(amount);
-    }
+    @NonNull
+    @Column(nullable = false, updatable = false, columnDefinition = "text")
+    private String payload;
 
-    public void withdraw(BigDecimal amount) {
-        this.balance = this.balance.subtract(amount);
+    @Column
+    private Instant publishedAt;
+
+    public void markPublished(Instant publishedAt) {
+        this.publishedAt = publishedAt;
     }
 
 }
