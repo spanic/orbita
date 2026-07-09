@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
+import com.bmstu_bureau_1440.payments.dto.AccountBalanceResponse;
 import com.bmstu_bureau_1440.payments.dto.CreateAccountRequest;
 import com.bmstu_bureau_1440.payments.dto.TopUpAccountRequest;
 import com.bmstu_bureau_1440.payments.error.AccountAlreadyExistsException;
@@ -87,11 +88,11 @@ class PaymentsControllerTest {
     }
 
     @Test
-    void topUpAccount_returnsAccountAsJson_whenAccountExists() throws Exception {
+    void topUpAccount_returnsAccountBalanceAsJson_whenAccountExists() throws Exception {
         TopUpAccountRequest request = Instancio.create(TopUpAccountRequest.class);
-        Account account = Instancio.create(ACCOUNT_MODEL);
+        AccountBalanceResponse response = Instancio.create(AccountBalanceResponse.class);
 
-        when(accountService.topUpAccount(any(), any())).thenReturn(account);
+        when(accountService.topUpAccount(any(), any())).thenReturn(response);
 
         assertThat(mvcTester.perform(post(PaymentsApi.BASE_PATH + PaymentsApi.TOP_UP_PATH)
                 .header(userIdHeaderProperties.userIdHeader(), "user-1")
@@ -100,8 +101,8 @@ class PaymentsControllerTest {
                 .hasStatusOk()
                 .hasContentType(MediaType.APPLICATION_JSON)
                 .bodyJson()
-                .convertTo(Account.class)
-                .isEqualTo(account);
+                .convertTo(AccountBalanceResponse.class)
+                .isEqualTo(response);
     }
 
     @Test
@@ -121,7 +122,8 @@ class PaymentsControllerTest {
     void topUpAccount_returnsConflict_whenAccountWasConcurrentlyModified() throws Exception {
         TopUpAccountRequest request = Instancio.create(TopUpAccountRequest.class);
 
-        when(accountService.topUpAccount(any(), any())).thenThrow(new OptimisticLockingFailureException("stale version"));
+        when(accountService.topUpAccount(any(), any()))
+                .thenThrow(new OptimisticLockingFailureException("stale version"));
 
         assertThat(mvcTester.perform(post(PaymentsApi.BASE_PATH + PaymentsApi.TOP_UP_PATH)
                 .header(userIdHeaderProperties.userIdHeader(), "user-1")

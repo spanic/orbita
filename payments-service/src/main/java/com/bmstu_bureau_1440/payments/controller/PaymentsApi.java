@@ -8,4 +8,6 @@ public final class PaymentsApi {
 
     public static final String BASE_PATH = "/accounts";
     public static final String TOP_UP_PATH = "/top-up";
+    public static final String BALANCE_PATH = "/balance";
+
 }

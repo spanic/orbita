@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.bmstu_bureau_1440.payments.dto.AccountBalanceResponse;
 import com.bmstu_bureau_1440.payments.dto.TopUpAccountRequest;
 import com.bmstu_bureau_1440.payments.model.Account;
 import com.bmstu_bureau_1440.payments.service.AccountService;
@@ -36,10 +37,16 @@ public class PaymentsController {
     }
 
     @PostMapping(PaymentsApi.TOP_UP_PATH)
-    public Account topUpAccount(
+    public AccountBalanceResponse topUpAccount(
             @RequestAttribute(UserIdHeaderInterceptor.USER_ID_ATTRIBUTE) String userId,
             @RequestBody @Validated TopUpAccountRequest request) {
         return accountService.topUpAccount(userId, request);
+    }
+
+    @GetMapping(PaymentsApi.BALANCE_PATH)
+    public AccountBalanceResponse getAccountBalance(
+            @RequestAttribute(UserIdHeaderInterceptor.USER_ID_ATTRIBUTE) String userId) {
+        return accountService.getAccountBalance(userId);
     }
 
 }

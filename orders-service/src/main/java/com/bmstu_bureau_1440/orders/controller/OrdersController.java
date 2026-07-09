@@ -1,7 +1,6 @@
 package com.bmstu_bureau_1440.orders.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
@@ -35,7 +34,7 @@ public class OrdersController {
 
     @GetMapping(OrdersApi.ORDER_ID_PATH)
     public Order getOrder(
-            @PathVariable(OrdersApi.ORDER_ID_PARAM) UUID orderId,
+            @PathVariable(OrdersApi.ORDER_ID_PARAM) String orderId,
             @RequestAttribute(UserIdHeaderInterceptor.USER_ID_ATTRIBUTE) String userId) {
         return orderService.findById(orderId, userId);
     }

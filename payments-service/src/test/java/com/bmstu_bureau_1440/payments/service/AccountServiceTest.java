@@ -23,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 
+import com.bmstu_bureau_1440.payments.dto.AccountBalanceResponse;
 import com.bmstu_bureau_1440.payments.dto.TopUpAccountRequest;
 import com.bmstu_bureau_1440.payments.error.AccountAlreadyExistsException;
 import com.bmstu_bureau_1440.payments.error.AccountNotFoundException;
@@ -48,7 +49,7 @@ class AccountServiceTest {
         Account account = Instancio.create(ACCOUNT_MODEL);
 
         when(createAccountRequestMapper.apply(userId)).thenReturn(account);
-        when(accountRepository.save(account)).thenReturn(account);
+        when(accountRepository.saveAndFlush(account)).thenReturn(account);
 
         assertThat(accountService.createAccount(userId)).isEqualTo(account);
     }
@@ -59,7 +60,7 @@ class AccountServiceTest {
         Account account = Instancio.create(ACCOUNT_MODEL);
 
         when(createAccountRequestMapper.apply(userId)).thenReturn(account);
-        when(accountRepository.save(account))
+        when(accountRepository.saveAndFlush(account))
                 .thenThrow(new DataIntegrityViolationException("duplicate user_id"));
 
         assertThatThrownBy(() -> accountService.createAccount(userId))
@@ -77,9 +78,9 @@ class AccountServiceTest {
         when(accountRepository.findByUserId(account.getUserId())).thenReturn(Optional.of(account));
         when(accountRepository.save(account)).thenReturn(account);
 
-        Account result = accountService.topUpAccount(account.getUserId(), request);
+        AccountBalanceResponse result = accountService.topUpAccount(account.getUserId(), request);
 
-        assertThat(result.getBalance()).isEqualByComparingTo(BigDecimal.valueOf(11));
+        assertThat(result.balance()).isEqualByComparingTo(BigDecimal.valueOf(11));
     }
 
     @Test

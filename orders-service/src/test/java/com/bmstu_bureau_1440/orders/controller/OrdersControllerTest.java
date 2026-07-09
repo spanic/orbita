@@ -76,7 +76,7 @@ class OrdersControllerTest {
         UUID orderId = UUID.randomUUID();
         Order order = Instancio.create(ARCHIVE_ORDER_MODEL);
 
-        when(orderService.findById(orderId, "test-user-id")).thenReturn(order);
+        when(orderService.findById(orderId.toString(), "test-user-id")).thenReturn(order);
 
         assertThat(mvcTester.perform(get(OrdersApi.BASE_PATH + OrdersApi.ORDER_ID_PATH, orderId)
                 .header(userIdHeaderProperties.userIdHeader(), "test-user-id")))
@@ -91,7 +91,7 @@ class OrdersControllerTest {
     void getOrder_returnsNotFound_whenOrderDoesNotExist() throws Exception {
         UUID orderId = UUID.randomUUID();
 
-        when(orderService.findById(orderId, "test-user-id")).thenThrow(new OrderNotFoundException());
+        when(orderService.findById(orderId.toString(), "test-user-id")).thenThrow(new OrderNotFoundException());
 
         assertThat(mvcTester.perform(get(OrdersApi.BASE_PATH + OrdersApi.ORDER_ID_PATH, orderId)
                 .header(userIdHeaderProperties.userIdHeader(), "test-user-id")))
@@ -102,7 +102,8 @@ class OrdersControllerTest {
     void getOrder_returnsNotFound_whenOrderBelongsToDifferentUser() throws Exception {
         UUID orderId = UUID.randomUUID();
 
-        when(orderService.findById(orderId, "other-user-id")).thenThrow(new OrderNotFoundException());
+        when(orderService.findById(orderId.toString(), "other-user-id"))
+                .thenThrow(new OrderNotFoundException());
 
         assertThat(mvcTester.perform(get(OrdersApi.BASE_PATH + OrdersApi.ORDER_ID_PATH, orderId)
                 .header(userIdHeaderProperties.userIdHeader(), "other-user-id")))

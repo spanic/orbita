@@ -2,6 +2,7 @@ package com.bmstu_bureau_1440.orders.service;
 
 import static com.bmstu_bureau_1440.orders.OrderTestsFixtures.ARCHIVE_ORDER_REQUEST_MODEL;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
 import com.bmstu_bureau_1440.orders.TestContainersConfiguration;
+import com.bmstu_bureau_1440.orders.error.OrderNotFoundException;
 import com.bmstu_bureau_1440.orders.model.Order;
 import com.bmstu_bureau_1440.orders.model.OrderStatus;
 import com.bmstu_bureau_1440.orders.repository.OrderRepository;
@@ -60,6 +62,11 @@ class OrderServiceIntegrationTest {
         assertThat(events.getFirst().getPayload())
                 .contains(order.getId().toString())
                 .contains("test-user-id");
+    }
+
+    @Test
+    void findById_throwsOrderNotFound_whenOrderIdIsNotAValidUuid() {
+        assertThrows(OrderNotFoundException.class, () -> orderService.findById("not-a-uuid", "test-user-id"));
     }
 
 }

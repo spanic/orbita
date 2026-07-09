@@ -41,8 +41,16 @@ public class OrderService {
         return orderRepository.findAllByUserId(userId);
     }
 
-    public Order findById(UUID orderId, String userId) {
-        return orderRepository.findByIdAndUserId(orderId, userId).orElseThrow(OrderNotFoundException::new);
+    public Order findById(String orderId, String userId) {
+        UUID id;
+
+        try {
+            id = UUID.fromString(orderId);
+        } catch (IllegalArgumentException e) {
+            throw new OrderNotFoundException();
+        }
+
+        return orderRepository.findByIdAndUserId(id, userId).orElseThrow(OrderNotFoundException::new);
     }
 
     @Transactional
