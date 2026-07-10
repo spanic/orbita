@@ -1,0 +1,150 @@
+{
+    "version": "1.168.0",
+    "results": [],
+    "errors": [],
+    "paths": {
+        "scanned": [
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/OrdersServiceApplication.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/config/JpaConfig.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/config/KafkaTopicConfig.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/config/PricingProperties.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/config/WebConfig.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/controller/OrdersApi.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/controller/OrdersController.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/dto/ArchivePayload.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/dto/CreateOrderRequest.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/dto/MonitoringPayload.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/dto/OrderPayload.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/dto/TaskingPayload.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/error/OrderNotFoundException.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/error/OrdersErrorCodeRegistry.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/error/OrdersExceptionHandler.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/mapper/ArchivePayloadMapper.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/mapper/MonitoringPayloadMapper.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/mapper/PayloadMapperRegistry.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/mapper/TaskingPayloadMapper.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/ArchiveOrder.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/Cadence.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/MonitoringOrder.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/Order.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/OrderStatus.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/OrderTypes.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/SensorType.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/model/TaskingOrder.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/repository/OrderRepository.java",
+            "orders-service/src/main/java/com/bmstu_bureau_1440/orders/service/OrderService.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/PaymentsServiceApplication.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/config/JpaConfig.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/config/KafkaTopicConfig.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/config/WebConfig.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/controller/PaymentsApi.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/controller/PaymentsController.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/dto/AccountBalanceResponse.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/dto/CreateAccountRequest.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/dto/TopUpAccountRequest.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/error/AccountAlreadyExistsException.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/error/AccountNotFoundException.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/error/PaymentsErrorCodeRegistry.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/error/PaymentsExceptionHandler.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/listener/PaymentRequestListener.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/mapper/CreateAccountRequestMapper.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/model/Account.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/model/PaymentOutcome.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/model/PaymentTransaction.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/repository/AccountRepository.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/repository/PaymentTransactionRepository.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/service/AccountService.java",
+            "payments-service/src/main/java/com/bmstu_bureau_1440/payments/service/PaymentProcessingService.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/config/PersistenceConfig.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/config/UserIdHeaderProperties.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/dto/ErrorResponse.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/error/BaseExceptionHandler.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/error/ErrorCode.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/error/ErrorCodesRegistry.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/error/MissingUserIdException.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/event/OrderPaymentRequestedEvent.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/event/OrderPaymentResultEvent.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/event/PaymentFailureReason.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/event/PaymentResultOutcome.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/event/PaymentTopics.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/outbox/OutboxEvent.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/outbox/OutboxEventRepository.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/outbox/OutboxEventWriter.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/outbox/OutboxRelay.java",
+            "shared/src/main/java/com/bmstu_bureau_1440/shared/web/UserIdHeaderInterceptor.java"
+        ]
+    },
+    "time": {
+        "rules": [],
+        "rules_parse_time": 0.030419111251831055,
+        "profiling_times": {
+            "config_time": 0.6895160675048828,
+            "core_time": 0.4069218635559082,
+            "ignores_time": 0.0001087188720703125,
+            "total_time": 1.1048369407653809
+        },
+        "parsing_time": {
+            "total_time": 0.0,
+            "per_file_time": {
+                "mean": 0.0,
+                "std_dev": 0.0
+            },
+            "very_slow_stats": {
+                "time_ratio": 0.0,
+                "count_ratio": 0.0
+            },
+            "very_slow_files": []
+        },
+        "scanning_time": {
+            "total_time": 0.4588279724121094,
+            "per_file_time": {
+                "mean": 0.006747470182531019,
+                "std_dev": 4.5443995356226e-05
+            },
+            "very_slow_stats": {
+                "time_ratio": 0.0,
+                "count_ratio": 0.0
+            },
+            "very_slow_files": []
+        },
+        "matching_time": {
+            "total_time": 0.0,
+            "per_file_and_rule_time": {
+                "mean": 0.0,
+                "std_dev": 0.0
+            },
+            "very_slow_stats": {
+                "time_ratio": 0.0,
+                "count_ratio": 0.0
+            },
+            "very_slow_rules_on_files": []
+        },
+        "tainting_time": {
+            "total_time": 0.0,
+            "per_def_and_rule_time": {
+                "mean": 0.0,
+                "std_dev": 0.0
+            },
+            "very_slow_stats": {
+                "time_ratio": 0.0,
+                "count_ratio": 0.0
+            },
+            "very_slow_rules_on_defs": []
+        },
+        "fixpoint_timeouts": [],
+        "prefiltering": {
+            "project_level_time": 0.0,
+            "file_level_time": 0.0,
+            "rules_with_project_prefilters_ratio": 0.0,
+            "rules_with_file_prefilters_ratio": 0.95,
+            "rules_selected_ratio": 0.07843137254901961,
+            "rules_matched_ratio": 0.07843137254901961
+        },
+        "targets": [],
+        "total_bytes": 0,
+        "max_memory_bytes": 221146816
+    },
+    "engine_requested": "OSS",
+    "skipped_rules": [],
+    "profiling_results": []
+}

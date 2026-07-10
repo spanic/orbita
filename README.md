@@ -1,16 +1,18 @@
 # Orbita
 
+X-User-Id: 123e4567-e89b-12d3-a456-426614174000
+
 Multi-module Spring Boot 4 project. Two independently deployable services backed by
 their own PostgreSQL database and a shared Kafka broker, an nginx API gateway in
 front of them, plus a lightweight shared utilities module.
 
 ## Modules
 
-| Module             | Type           | Description                                                     |
-| ------------------ | -------------- | ----------------------------------------------------------------- |
-| `shared`           | library jar    | Cross-service utilities. Framework-light on purpose.            |
-| `orders-service`   | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8081`, base path `/api/v1/orders`.     |
-| `payments-service` | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8082`, base path `/api/v1/payments`.   |
+| Module             | Type           | Description                                                                             |
+| ------------------ | -------------- | --------------------------------------------------------------------------------------- |
+| `shared`           | library jar    | Cross-service utilities. Framework-light on purpose.                                    |
+| `orders-service`   | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8081`, base path `/api/v1/orders`.             |
+| `payments-service` | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8082`, base path `/api/v1/payments`.           |
 | `gateway`          | nginx image    | `nginxinc/nginx-unprivileged` reverse proxy in front of both services. HTTP on `:8080`. |
 
 Each service exposes a `GET /hello` endpoint (returns a greeting built via the
