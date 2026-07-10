@@ -98,12 +98,12 @@ public class OrderService {
     public void applyPaymentFailed(OrderPaymentResultEvent event) {
         orderRepository.findById(event.orderId()).ifPresentOrElse(order -> {
             if (order.getStatus() == OrderStatus.PAYMENT_PENDING) {
-                order.setStatus(OrderStatus.PAYMENT_FAILED);
+                order.setFailureReason(event.failureReason());
+                order.markPaymentFailed();
             } else {
-                log.info("Ignoring duplicate OrderPaymentFailed for order {} (status={})",
-                        event.orderId(), order.getStatus());
+                log.info("Ignoring duplicate OrderPaymentFailed for order {} (status={})", event.orderId(),
+                        order.getStatus());
             }
         }, () -> log.warn("OrderPaymentFailed for unknown order {}", event.orderId()));
     }
-
 }

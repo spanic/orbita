@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.bmstu_bureau_1440.shared.event.PaymentFailureReason;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -76,6 +77,11 @@ public abstract class Order {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status = OrderStatus.PAYMENT_PENDING;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column()
+    private PaymentFailureReason failureReason;
 
     public void markPaid() {
         this.status = OrderStatus.PAID;
