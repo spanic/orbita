@@ -1,0 +1,66 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+
+title Orbita Market — C4 Диаграмма контейнеров (Уровень 2)
+
+' ─── Акторы ───────────────────────────────────────────────────────────────────
+
+Person(operator, "Оператор ДЗЗ", "Заказывает спутниковые снимки, отслеживает статус заказов.")
+Person(analyst, "Аналитическая компания", "Пополняет баланс геокредитов и управляет аккаунтом.")
+
+' ─── Внешние системы ──────────────────────────────────────────────────────────
+
+System_Ext(auth, "Провайдер аутентификации\n(запланировано)", "JWT-аутентификация пользователей.")
+System_Ext(satellite, "Спутниковая система ДЗЗ\n(запланировано)", "Внешний оператор спутниковой съёмки. Получает задания на плановую и архивную съёмку.")
+System_Ext(billing, "Платёжный шлюз\n(запланировано)", "Обработка пополнения баланса в фиатной валюте.")
+
+' ─── Система Orbita Market ────────────────────────────────────────────────────
+
+System_Boundary(orbita, "Orbita Market") {
+
+    Container(gateway, "API Gateway", "nginx 1.27", "Единая точка входа. Маршрутизирует запросы к сервисам по префиксу пути.")
+
+    Container(orders, "Orders Service", "Spring Boot 3, Java 21", "Приём и хранение заказов. Управление жизненным циклом заказа и инициирование оплаты.")
+
+    Container(payments, "Payments Service", "Spring Boot 3, Java 21", "Управление аккаунтами и балансом геокредитов. Обработка списаний по заказам.")
+
+    ContainerDb(orders_db, "Orders DB", "PostgreSQL 16", "Хранит заказы и таблицу исходящих событий инициирования оплаты.")
+
+    ContainerDb(payments_db, "Payments DB", "PostgreSQL 16", "Хранит аккаунты, транзакции и таблицу исходящих событий оправки уведомлений о статусах оплаты.")
+
+    ContainerQueue(kafka, "Message Broker", "Apache Kafka 3.8", "Асинхронная коммуникация между сервисами через топики order-payment-requested и order-payment-result.")
+
+}
+
+' ─── Связи: акторы → система ──────────────────────────────────────────────────
+
+Rel(operator, gateway, "Создает и получает информацию о статусах заказов", "HTTP / REST")
+Rel(analyst, gateway, "Управляет аккаунтом, пополняет баланс", "HTTP / REST")
+
+' ─── Связи: gateway → сервисы ─────────────────────────────────────────────────
+
+Rel(gateway, orders, "/orders/** → проксирует запросы", "HTTP / REST")
+Rel(gateway, payments, "/payments/** → проксирует запросы", "HTTP / REST")
+
+' ─── Связи: сервисы ↔ БД ─────────────────────────────────────────────────────
+
+Rel(orders, orders_db, "Читает и записывает заказы и outbox-события", "JDBC / JPA")
+Rel(payments, payments_db, "Читает и записывает аккаунты, транзакции и outbox-события", "JDBC / JPA")
+
+' ─── Связи: сервисы ↔ Kafka (через Outbox Relay) ─────────────────────────────
+
+Rel(orders, kafka, "Публикует OrderPaymentRequestedEvent\n(через Outbox Relay, каждые 500 мс)", "Kafka Producer")
+Rel(kafka, orders, "Получает OrderPaymentResultEvent", "Kafka Consumer")
+
+Rel(payments, kafka, "Публикует OrderPaymentResultEvent\n(через Outbox Relay, каждые 500 мс)", "Kafka Producer")
+Rel(kafka, payments, "Получает OrderPaymentRequestedEvent", "Kafka Consumer")
+
+' ─── Связи: система → внешние системы ────────────────────────────────────────
+
+Rel(gateway, auth, "Аутентифицирует пользователей\n[этап 7 дорожной карты]", "HTTPS")
+Rel(orders, satellite, "Передаёт задания на съёмку\n[будущая интеграция]", "API")
+Rel(payments, billing, "Инициирует пополнение баланса\n[будущая интеграция]", "HTTPS")
+
+@enduml

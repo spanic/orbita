@@ -1,0 +1,64 @@
+@startuml
+!theme plain
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Sequence.puml
+
+title Orbita Market — Поток создания и оплаты заказа
+
+participant "Клиент" as client
+participant "API Gateway\n(nginx)" as gateway
+participant "Orders Service" as orders
+participant "Orders DB\n(PostgreSQL)" as orders_db
+participant "Kafka" as kafka
+participant "Payments Service" as payments
+participant "Payments DB\n(PostgreSQL)" as payments_db
+
+== Создание заказа ==
+
+client -> gateway : POST /orders\n{type, aoi, payload}
+gateway -> orders : POST /api/v1/orders/{type, aoi, payload}
+orders -> orders_db : Сохраняет заказ (status = PAYMENT_PENDING)\nи исходящее событие оплаты в одной транзакции
+orders --> gateway : 201 Created {order_id, status: PAYMENT_PENDING}
+gateway --> client : 201 Created {order_id, status: PAYMENT_PENDING}
+
+== Публикация события (Outbox Relay, каждые 500 мс) ==
+
+orders -> orders_db : Читает неотправленные исходящие события
+orders -> kafka : OrderPaymentRequestedEvent\n→ topic: order-payment-requested
+orders -> orders_db : Помечает событие как отправленное
+
+== Обработка оплаты ==
+
+kafka -> payments : OrderPaymentRequestedEvent\n← topic: order-payment-requested
+
+payments -> payments_db : Проверяет идемпотентность по order_id
+
+alt Повторное событие
+    payments -> kafka : Повторно публикует ранее записанный результат
+else Новый заказ
+    alt Аккаунт не найден
+        payments -> payments_db : Сохраняет транзакцию (FAILED: ACCOUNT_NOT_FOUND)\nи исходящее событие результата в одной транзакции
+    else Недостаточно средств
+        payments -> payments_db : Сохраняет транзакцию (FAILED: INSUFFICIENT_BALANCE)\nи исходящее событие результата в одной транзакции
+    else Оплата успешна
+        payments -> payments_db : Списывает геокредиты с баланса,\nсохраняет транзакцию (PAID)\nи исходящее событие результата в одной транзакции
+    end
+end
+
+== Публикация результата (Outbox Relay, каждые 500 мс) ==
+
+payments -> payments_db : Читает неотправленные исходящие события
+payments -> kafka : OrderPaymentResultEvent\n→ topic: order-payment-result
+payments -> payments_db : Помечает событие как отправленное
+
+== Обновление статуса заказа ==
+
+kafka -> orders : OrderPaymentResultEvent\n← topic: order-payment-result
+orders -> orders_db : Проверяет, что заказ ожидает оплаты (PAYMENT_PENDING)
+
+alt outcome = PAID
+    orders -> orders_db : Переводит заказ в статус PAID
+else outcome = FAILED
+    orders -> orders_db : Переводит заказ в статус PAYMENT_FAILED\nс сохранением причины отказа
+end
+
+@enduml
