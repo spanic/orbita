@@ -1,106 +1,245 @@
 ![Orbita Market banner](images/Banner.png)
 
+Orbita Market — B2B-платформа заказа спутниковых снимков. Пользователи размещают заказы трёх типов (архив, плановая съёмка, мониторинг) и оплачивают их внутренней валютой — **геокредитами**.
+
+Архитектурно — два независимых сервиса с собственными БД, общий Kafka-брокер, nginx-шлюз и библиотека общих утилит.
+
+## Компоненты
+
+| Модуль             | Тип            | Порт                    | Описание                                                                                 |
+| ------------------ | -------------- | ----------------------- | ---------------------------------------------------------------------------------------- |
+| `shared`           | library jar    | —                       | Общие утилиты: Transactional Outbox, Kafka-события, HTTP-перехватчик идентификации, DTO. |
+| `orders-service`   | executable jar | `8081`                  | Приём и хранение заказов. Управление жизненным циклом заказа и инициирование оплаты.     |
+| `payments-service` | executable jar | `8082`                  | Управление аккаунтами и балансом геокредитов. Обработка списаний по заказам.             |
+| `gateway`          | nginx image    | `8080` (доступен извне) | Единая точка входа. Проксирует `/orders/**` и `/payments/**` к соответствующим сервисам. |
+
+## Структура проекта
+
+```
+orbita/
+├── docker-compose.yaml
+├── mvnw / mvnw.cmd
+├── pom.xml                          # корневой POM (BOM, Lombok, плагины)
+│
+├── shared/                          # library jar
+│   └── src/main/java/.../shared/
+│       ├── config/                  # PersistenceConfig, UserIdHeaderProperties
+│       ├── dto/                     # ErrorResponse
+│       ├── error/                   # BaseExceptionHandler, ErrorCode, коды ошибок
+│       ├── event/                   # Kafka-контракты: события и топики
+│       ├── outbox/                  # Transactional Outbox: OutboxEvent, OutboxRelay
+│       └── web/                     # UserIdHeaderInterceptor
+│
+├── orders-service/
+│   ├── Dockerfile
+│   └── src/
+│       ├── main/java/.../orders/
+│       │   ├── config/              # JpaConfig, KafkaTopicConfig, PricingProperties
+│       │   ├── controller/          # OrdersController, OrdersApi
+│       │   ├── dto/                 # CreateOrderRequest, *Payload
+│       │   ├── error/               # OrderNotFoundException, ExceptionHandler
+│       │   ├── listener/            # OrderPaymentResultListener
+│       │   ├── mapper/              # PayloadMapperRegistry, *PayloadMapper
+│       │   ├── model/               # Order (STI), OrderStatus, OrderTypes, SensorType
+│       │   ├── repository/          # OrderRepository
+│       │   └── service/             # OrderService, OrderProcessingService
+│       └── test/java/.../orders/
+│           ├── controller/          # OrdersControllerTest (@WebMvcTest)
+│           ├── repository/          # OrdersServiceRepositoryIntegrationTest (@DataJpaTest)
+│           └── service/             # OrderServiceIntegrationTest, OrderPaymentResultServiceIntegrationTest
+│
+├── payments-service/
+│   ├── Dockerfile
+│   └── src/
+│       ├── main/java/.../payments/
+│       │   ├── config/              # JpaConfig, KafkaTopicConfig
+│       │   ├── controller/          # PaymentsController, PaymentsApi
+│       │   ├── dto/                 # CreateAccountRequest, TopUpAccountRequest, AccountBalanceResponse
+│       │   ├── error/               # AccountNotFoundException, AccountAlreadyExistsException, ExceptionHandler
+│       │   ├── listener/            # PaymentRequestListener
+│       │   ├── mapper/              # CreateAccountRequestMapper
+│       │   ├── model/               # Account, PaymentTransaction, PaymentOutcome
+│       │   ├── repository/          # AccountRepository, PaymentTransactionRepository
+│       │   └── service/             # AccountService, PaymentProcessingService
+│       └── test/java/.../payments/
+│           ├── controller/          # PaymentsControllerTest (@WebMvcTest)
+│           ├── repository/          # AccountsRepositoryIntegrationTest (@DataJpaTest)
+│           └── service/             # AccountServiceTest, PaymentProcessingServiceIntegrationTest
+│
+├── gateway/
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   └── proxy-common.conf
+│
+└── docs/
+    ├── c4-context.puml              # C4 Level 1: системный контекст
+    ├── c4-containers.puml           # C4 Level 2: контейнеры
+    ├── payment-flow.puml            # Диаграмма последовательности: поток оплаты
+    └── analytics.sql                # Аналитические SQL-запросы
+```
+
+## Технологический стек
+
+- **Java 21**, Spring Boot 4.1.0, Maven (multi-module reactor)
+- **Spring Web MVC**, Spring Data JPA (PostgreSQL 16), Spring for Apache Kafka 3.8
+- **Apache Kafka** — асинхронная коммуникация между сервисами
+- **Transactional Outbox** — гарантированная доставка событий в Kafka
+- **Lombok** — кодогенерация
+- **Testcontainers** (PostgreSQL + Kafka) — интеграционные тесты
+- **JUnit 5** — фреймворк для тестирования
+
+## Архитектура
+
 ![Orders service](images/Orders%20service.png)
+
 ![Payments service](images/Payments%20service.png)
 
-Multi-module Spring Boot 4 project. Two independently deployable services backed by
-their own PostgreSQL database and a shared Kafka broker, an nginx API gateway in
-front of them, plus a lightweight shared utilities module.
+## Предварительные требования
 
-## Modules
+- **JDK 21+**
+- **Docker** и **Docker Compose** — для запуска полного стека или интеграционных тестов
+- (Опционально) **Maven 3.9+** — либо используйте прилагаемый `./mvnw`
 
-| Module             | Type           | Description                                                                             |
-| ------------------ | -------------- | --------------------------------------------------------------------------------------- |
-| `shared`           | library jar    | Cross-service utilities. Framework-light on purpose.                                    |
-| `orders-service`   | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8081`, base path `/api/v1/orders`.             |
-| `payments-service` | executable jar | REST + JPA/PostgreSQL + Kafka. HTTP on `:8082`, base path `/api/v1/payments`.           |
-| `gateway`          | nginx image    | `nginxinc/nginx-unprivileged` reverse proxy in front of both services. HTTP on `:8080`. |
+## Запуск
 
-Each service exposes a `GET /hello` endpoint (returns a greeting built via the
-`shared` module) and Actuator health/info at `/actuator/health`, `/actuator/info`
-(all under the service's base path, e.g. `/api/v1/orders/hello`).
-
-The gateway is the only entry point exposed to the host; it proxies:
-- `/orders/**` -> `orders-service` at `/api/v1/orders/orders/**`
-- `/payments/**` -> `payments-service` at `/api/v1/payments/accounts/**`
-
-## Tech stack
-
-- Java 21, Spring Boot 4.1.0, Maven (multi-module reactor)
-- Spring Web MVC, Spring Data JPA (PostgreSQL), Spring for Apache Kafka
-- Lombok (annotation processing wired in the parent POM)
-- Testing: JUnit 5, Mockito, AssertJ, Spring Boot test slices
-  (`@WebMvcTest`, `@DataJpaTest`, Kafka test support) and **Testcontainers**
-  (PostgreSQL + Kafka) wired via Spring Boot `@ServiceConnection`
-
-## Build & test
-
-```bash
-./mvnw clean verify          # full build; integration tests need Docker (see below)
-./mvnw -DskipTests package   # just build the jars
-```
-
-Run a single service jar:
-
-```bash
-java -jar orders-service/target/orders-service-0.0.1-SNAPSHOT.jar
-```
-
-### Tests and Docker
-
-- **Unit / web-slice tests** (`GreetingsTest`, `HelloControllerTest`) need **no Docker**:
-
-  ```bash
-  ./mvnw test -Dtest='!*ApplicationTests' -DfailIfNoTests=false
-  ```
-
-- **Integration tests** (`*ApplicationTests`, `@SpringBootTest`) start real PostgreSQL
-  and Kafka via Testcontainers and therefore require a **running Docker daemon**. With
-  Docker available, a plain `./mvnw test` runs everything.
-
-### Run a service locally with throwaway infrastructure
-
-`Test<Service>Application` (in `src/test`) boots the app with PostgreSQL and Kafka
-provided by Testcontainers — no manual setup. Run it from your IDE, or:
-
-```bash
-./mvnw -pl orders-service spring-boot:test-run
-```
-
-## Containers
-
-Each service has a multi-stage `Dockerfile` (build context is the repo root so the
-`shared` module is available). `orders-service` and `payments-service` are not
-published on the host — only the `gateway` is. Bring up the full stack with:
+### Полный стек через Docker Compose
 
 ```bash
 docker compose up --build
-# orders   -> http://localhost:8080/orders
-# payments -> http://localhost:8080/payments/accounts
 ```
 
-## Configuration
+| Сервис           | URL                                 |
+| ---------------- | ----------------------------------- |
+| Orders Service   | http://localhost:8080/orders        |
+| Payments Service | http://localhost:8080/payments      |
+| Orders DB        | localhost:5432 (внутри Docker-сети) |
+| Payments DB      | localhost:5433 (внутри Docker-сети) |
+| Kafka            | localhost:9092 (внутри Docker-сети) |
 
-Settings live in each service's `src/main/resources/application.yaml` and are
-overridable via environment variables (defaults target `localhost`):
+### Локальный запуск сервиса с Testcontainers
 
-| Variable                                      | Default                                 |
-| --------------------------------------------- | --------------------------------------- |
-| `ORDERS_DB_URL` / `PAYMENTS_DB_URL`           | `jdbc:postgresql://localhost:5432/<db>` |
-| `ORDERS_DB_USER` / `PAYMENTS_DB_USER`         | `<service>`                             |
-| `ORDERS_DB_PASSWORD` / `PAYMENTS_DB_PASSWORD` | `<service>`                             |
-| `KAFKA_BOOTSTRAP_SERVERS`                     | `localhost:9092`                        |
-| `SERVER_PORT`                                 | `8081` (orders) / `8082` (payments)     |
+`TestOrdersServiceApplication` / `TestPaymentsServiceApplication` автоматически поднимают PostgreSQL и Kafka через Testcontainers — ручная настройка инфраструктуры не нужна. Запустите из IDE или:
 
-> `spring.jpa.hibernate.ddl-auto` is set to `update` for boilerplate convenience.
-> Switch to a migration tool (Flyway/Liquibase) before production.
+```bash
+./mvnw -pl orders-service spring-boot:test-run
+./mvnw -pl payments-service spring-boot:test-run
+```
 
-## How the POMs are organized
+## Переменные окружения и конфигурация
 
-- The **root POM** (`packaging: pom`) inherits the Spring Boot BOM for version
-  management, declares the only two truly universal dependencies (Lombok + the core
-  test stack), and centralizes the Lombok/compiler and Spring Boot plugin config.
-- **`shared`** stays minimal — no web/JPA/Kafka — so it remains a clean utility library.
-- Each **service** declares its own web/JPA/Kafka/Testcontainers stack, so the two can
-  evolve independently. Versions still come from the parent BOM, so dependency blocks
-  carry no version numbers.
+### Orders Service
+
+| Переменная окружения      | Параметр конфигурации            | Значение по умолчанию                     |
+| ------------------------- | -------------------------------- | ----------------------------------------- |
+| `ORDERS_DB_URL`           | `spring.datasource.url`          | `jdbc:postgresql://localhost:5432/orders` |
+| `ORDERS_DB_USER`          | `spring.datasource.username`     | `orders`                                  |
+| `ORDERS_DB_PASSWORD`      | `spring.datasource.password`     | `orders`                                  |
+| `KAFKA_BOOTSTRAP_SERVERS` | `spring.kafka.bootstrap-servers` | `localhost:9092`                          |
+| `ORDERS_UNIT_PRICE`       | `orders.pricing.unit-price`      | `100.00` (геокредитов за единицу заказа)  |
+| `SERVER_PORT`             | `server.port`                    | `8081`                                    |
+
+### Payments Service
+
+| Переменная окружения      | Параметр конфигурации            | Значение по умолчанию                       |
+| ------------------------- | -------------------------------- | ------------------------------------------- |
+| `PAYMENTS_DB_URL`         | `spring.datasource.url`          | `jdbc:postgresql://localhost:5432/payments` |
+| `PAYMENTS_DB_USER`        | `spring.datasource.username`     | `payments`                                  |
+| `PAYMENTS_DB_PASSWORD`    | `spring.datasource.password`     | `payments`                                  |
+| `KAFKA_BOOTSTRAP_SERVERS` | `spring.kafka.bootstrap-servers` | `localhost:9092`                            |
+| `SERVER_PORT`             | `server.port`                    | `8082`                                      |
+
+### Общие параметры (`shared`)
+
+| Параметр конфигурации                     | Значение по умолчанию | Описание                                          |
+| ----------------------------------------- | --------------------- | ------------------------------------------------- |
+| `app.user-id-header`                      | `X-User-Id`           | Имя HTTP-заголовка для идентификации пользователя |
+| `spring.jackson.property-naming-strategy` | `SNAKE_CASE`          | Формат полей JSON                                 |
+
+> `spring.jpa.hibernate.ddl-auto=update` — временное решение для разработки; перед production необходимо заменить на Flyway или Liquibase для обеспечения миграций БД.
+
+## API
+
+Каждый сервис доступен через gateway по адресу `http://localhost:8080`.
+
+### Orders Service (префикс: `/orders`)
+
+| Метод  | Путь           | Описание                                            |
+| ------ | -------------- | --------------------------------------------------- |
+| `POST` | `/orders`      | Создать заказ (тип: ARCHIVE / TASKING / MONITORING) |
+| `GET`  | `/orders`      | Получить список заказов текущего пользователя       |
+| `GET`  | `/orders/{id}` | Получить заказ по ID                                |
+
+### Payments Service (префикс: `/payments`)
+
+| Метод  | Путь                | Описание                        |
+| ------ | ------------------- | ------------------------------- |
+| `POST` | `/accounts`         | Создать аккаунт                 |
+| `GET`  | `/accounts`         | Получить информацию об аккаунте |
+| `GET`  | `/accounts/balance` | Получить текущий баланс         |
+| `POST` | `/accounts/top-up`  | Пополнить баланс геокредитов    |
+
+Идентификатор пользователя передаётся через заголовок `X-User-Id` в каждом запросе.
+
+> Можно использовать любое значение заголовка, например `luke-i-am-your-father`.
+
+Healthcheck и информация о сервисе: `GET /orders/actuator/health`, `GET /payments/actuator/health`.
+
+## Тесты
+
+```bash
+# Полная сборка со всеми тестами (требует Docker для интеграционных тестов)
+./mvnw clean verify
+
+# Только юнит-тесты и @WebMvcTest (без Docker)
+./mvnw test -Dtest='!*ApplicationTests,!*IntegrationTest' -DfailIfNoTests=false
+
+# Все тесты одного модуля
+./mvnw -pl orders-service test
+./mvnw -pl payments-service test
+```
+
+### Виды тестов
+
+| Вид            | Аннотация / класс               | Docker | Что проверяет                                   |
+| -------------- | ------------------------------- | ------ | ----------------------------------------------- |
+| Юнит           | `@ExtendWith(MockitoExtension)` | Нет    | Изолированная бизнес-логика сервисов            |
+| Web-слой       | `@WebMvcTest`                   | Нет    | HTTP-контракт контроллеров, валидация запросов  |
+| Интеграционный | `@SpringBootTest`               | Да     | Полный контекст приложения с PostgreSQL + Kafka |
+
+Инфраструктура для интеграционных тестов поднимается автоматически через Testcontainers с `@ServiceConnection`
+
+## Надёжность и корректность
+
+### Гарантированная доставка событий — Transactional Outbox
+
+Событие оплаты и запись в БД сохраняются в **одной транзакции**. Отдельный планировщик (Outbox Relay) публикует накопленные события в Kafka. Это исключает ситуацию, когда заказ сохранён, но событие оплаты потеряно (или наоборот).
+
+### Идемпотентность обработки платежей
+
+`PaymentTransaction` имеет уникальное ограничение по `order_id`. При повторном получении одного и того же события payments-service обнаруживает существующую транзакцию и повторно публикует уже записанный результат — без повторного списания.
+
+### Защита от параллельного списания
+
+Баланс аккаунта защищён **оптимистичной блокировкой** (`@Version`): при конкурентном обновлении одного аккаунта проигравшая транзакция получает исключение и откатывается, деньги не списываются дважды.
+
+### Идемпотентность обновления статуса заказа
+
+Orders-service применяет результат оплаты только если заказ находится в статусе `PAYMENT_PENDING`. Повторное событие для уже обработанного заказа игнорируется.
+
+## Документация
+
+PlantUML-диаграммы находятся в `docs/`:
+
+- `c4-context.puml` — системный контекст (C4 Level 1)
+- `c4-containers.puml` — контейнеры и взаимодействие (C4 Level 2)
+- `payment-flow.puml` — поток создания и оплаты заказа (sequence diagram)
+
+![C1](docs/С1.png)
+![C2](docs/С2.png)
+![Payment flow](docs/Payment%20flow.png)
+
+Там же находится SQL-запрос для аналитики: `analytics.sql`, и примеры его исполнения на тестовых данных
+
+![Analytics request 1](docs/Analytics%20request%201.png)
+![Analytics request 2](docs/Analytics%20request%202.png)
+![Analytics request 3](docs/Analytics%20request%203.png)
