@@ -47,7 +47,7 @@ class PaymentProcessingServiceIntegrationTest {
         Account account = accountRepository.save(accountWithBalance(BigDecimal.valueOf(100)));
         OrderPaymentRequestedEvent event = requestFor(account.getUserId(), BigDecimal.valueOf(40));
 
-        paymentProcessingService.process(event);
+        paymentProcessingService.processOrderPaymentRequest(event);
 
         assertThat(accountRepository.findByUserId(account.getUserId()).orElseThrow().getBalance())
                 .isEqualByComparingTo(BigDecimal.valueOf(60));
@@ -62,7 +62,7 @@ class PaymentProcessingServiceIntegrationTest {
         Account account = accountRepository.save(accountWithBalance(BigDecimal.valueOf(10)));
         OrderPaymentRequestedEvent event = requestFor(account.getUserId(), BigDecimal.valueOf(40));
 
-        paymentProcessingService.process(event);
+        paymentProcessingService.processOrderPaymentRequest(event);
 
         assertThat(accountRepository.findByUserId(account.getUserId()).orElseThrow().getBalance())
                 .isEqualByComparingTo(BigDecimal.valueOf(10));
@@ -76,7 +76,7 @@ class PaymentProcessingServiceIntegrationTest {
     void process_recordsFailedTransaction_whenAccountDoesNotExist() {
         OrderPaymentRequestedEvent event = requestFor("no-such-user", BigDecimal.valueOf(40));
 
-        paymentProcessingService.process(event);
+        paymentProcessingService.processOrderPaymentRequest(event);
 
         PaymentTransaction transaction = paymentTransactionRepository.findByOrderId(event.orderId()).orElseThrow();
         assertThat(transaction.getOutcome()).isEqualTo(PaymentOutcome.FAILED);
@@ -88,8 +88,8 @@ class PaymentProcessingServiceIntegrationTest {
         Account account = accountRepository.save(accountWithBalance(BigDecimal.valueOf(100)));
         OrderPaymentRequestedEvent event = requestFor(account.getUserId(), BigDecimal.valueOf(40));
 
-        paymentProcessingService.process(event);
-        paymentProcessingService.process(event);
+        paymentProcessingService.processOrderPaymentRequest(event);
+        paymentProcessingService.processOrderPaymentRequest(event);
 
         assertThat(accountRepository.findByUserId(account.getUserId()).orElseThrow().getBalance())
                 .isEqualByComparingTo(BigDecimal.valueOf(60));

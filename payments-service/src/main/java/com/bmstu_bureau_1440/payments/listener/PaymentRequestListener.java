@@ -26,12 +26,8 @@ public class PaymentRequestListener {
         OrderPaymentRequestedEvent event = objectMapper.readValue(payload, OrderPaymentRequestedEvent.class);
 
         try {
-            paymentProcessingService.process(event);
+            paymentProcessingService.processOrderPaymentRequest(event);
         } catch (DataIntegrityViolationException e) {
-            // Concurrent redelivery raced us on the order_id uniqueness constraint; the
-            // other
-            // thread already recorded (and will publish) the outcome for this order - safe
-            // no-op.
             log.info("Lost race processing OrderPaymentRequested for order {}, already handled concurrently",
                     event.orderId());
         }

@@ -32,7 +32,6 @@ public class OutboxRelay {
             try {
                 kafkaTemplate.send(event.getTopic(), event.getAggregateId().toString(), event.getPayload()).get();
                 event.markPublished(Instant.now());
-                outboxEventRepository.save(event);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 log.warn("Interrupted while publishing outbox event {}", event.getId(), e);

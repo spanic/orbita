@@ -1,6 +1,7 @@
-# Orbita
+![Orbita Market banner](images/Banner.png)
 
-X-User-Id: 123e4567-e89b-12d3-a456-426614174000
+![Orders service](images/Orders%20service.png)
+![Payments service](images/Payments%20service.png)
 
 Multi-module Spring Boot 4 project. Two independently deployable services backed by
 their own PostgreSQL database and a shared Kafka broker, an nginx API gateway in

@@ -33,7 +33,7 @@ public class PaymentProcessingService {
     private final OutboxEventWriter outboxEventWriter;
 
     @Transactional
-    public void process(OrderPaymentRequestedEvent event) {
+    public void processOrderPaymentRequest(OrderPaymentRequestedEvent event) {
         Optional<PaymentTransaction> existingPaymentTransaction = paymentTransactionRepository
                 .findByOrderId(event.orderId());
 
@@ -59,7 +59,7 @@ public class PaymentProcessingService {
         }
 
         account.withdraw(event.amount());
-        accountRepository.save(account);
+
         recordAndEnqueueSuccess(event, account);
     }
 

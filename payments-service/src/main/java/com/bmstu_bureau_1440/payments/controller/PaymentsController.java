@@ -32,7 +32,7 @@ public class PaymentsController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Account createPayment(@RequestAttribute(UserIdHeaderInterceptor.USER_ID_ATTRIBUTE) String userId) {
+    public Account createAccount(@RequestAttribute(UserIdHeaderInterceptor.USER_ID_ATTRIBUTE) String userId) {
         return accountService.createAccount(userId);
     }
 
