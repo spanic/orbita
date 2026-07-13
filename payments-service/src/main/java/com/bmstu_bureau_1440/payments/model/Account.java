@@ -38,6 +38,7 @@ public class Account {
     private UUID id;
 
     @CreatedDate
+    @EqualsAndHashCode.Exclude
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

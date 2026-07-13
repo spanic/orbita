@@ -57,6 +57,7 @@ public abstract class Order {
     private UUID id;
 
     @CreatedDate
+    @EqualsAndHashCode.Exclude
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
